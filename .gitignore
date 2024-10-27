@@ -46,7 +46,7 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
+Binaries
 Plugins/**/Binaries/*
 
 # Builds
@@ -71,4 +71,12 @@ Intermediate/*
 Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
-DerivedDataCache/*
+DerivedDataCache
+
+Intermediate
+
+Saved
+
+Content/*
+!Content/**/*.uasset
+!/Content/**/*.umap
