@@ -6,7 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameModeBaseInGame.generated.h"
 
-class ACharacter_Player2;
+class APlayerPawn;
 /**
  * 
  */
@@ -24,7 +24,7 @@ protected:
 public:
 	FTransform vSpawnTransform;
 
-	void KillPlayer(TObjectPtr<ACharacter_Player2> Player);
+	void KillPlayer(TObjectPtr<APlayerPawn> Player);
 
 private:
 	void Respawn();

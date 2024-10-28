@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/PlayerActor.h"
+#include "Character/PlayerPawn.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-APlayerActor::APlayerActor() {
+APlayerPawn::APlayerPawn() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	// ìñÇΩÇËîªíË
@@ -37,15 +37,14 @@ APlayerActor::APlayerActor() {
 	// ÉJÉÅÉâ
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	pCamera->SetupAttachment(pSpringArm);
-
 }
 
-void APlayerActor::BeginPlay() {
+void APlayerPawn::BeginPlay() {
 	Super::BeginPlay();
 
 }
 
-void APlayerActor::Tick(float DeltaTime) {
+void APlayerPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));

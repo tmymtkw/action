@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/BaseCharacter.h"
-#include "PlayerActor.generated.h"
+#include "Character/BaseCharacterPawn.h"
+#include "PlayerPawn.generated.h"
 
 class USkeletalMeshComponent;
 class UCapsuleComponent;
@@ -14,18 +14,19 @@ class USpringArmComponent;
  * 
  */
 UCLASS()
-class ACTION_API APlayerActor : public ABaseCharacter
+class ACTION_API APlayerPawn : public ABaseCharacterPawn
 {
 	GENERATED_BODY()
 	
 public:
-	APlayerActor();
+	APlayerPawn();
 
 	virtual void Tick(float DeltaTime) override;
 
-private:
+protected:
 	virtual void BeginPlay() override;
 
+private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCapsuleComponent> pCapsule;
 	UPROPERTY(VisibleAnywhere)
