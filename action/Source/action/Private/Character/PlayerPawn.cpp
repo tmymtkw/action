@@ -48,6 +48,7 @@ APlayerPawn::APlayerPawn() {
 	pMappingContext = LoadObject<UInputMappingContext>(NULL, TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_PlayerAction.IMC_PlayerAction'"));
 	// ŠeŽí“ü—Í
 	pMoveInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Move.IA_Move'"));
+	pLookInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Look.IA_Look'"));
 }
 
 void APlayerPawn::BeginPlay() {
@@ -59,14 +60,20 @@ void APlayerPawn::BeginPlay() {
 			Subsystem->AddMappingContext(pMappingContext, 0);
 		}
 	}
+
+	temp = FVector::Zero();
+	lookTemp = FRotator::ZeroRotator;
 }
 
 void APlayerPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	pCapsule->AddRelativeLocation(temp);
+
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, pCapsule->GetComponentLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, temp.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, lookTemp.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 }
 
 void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
@@ -75,6 +82,9 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if (TObjectPtr<UEnhancedInputComponent> pEnhancedInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		pEnhancedInput->BindAction(pMoveInput, ETriggerEvent::Triggered, this, &APlayerPawn::SetMoveInput);
 		pEnhancedInput->BindAction(pMoveInput, ETriggerEvent::Completed, this, &APlayerPawn::SetMoveInput);
+		pEnhancedInput->BindAction(pLookInput, ETriggerEvent::Triggered, this, &APlayerPawn::SetLookInput);
+		pEnhancedInput->BindAction(pLookInput, ETriggerEvent::Completed, this, &APlayerPawn::SetLookInput);
+
 		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
 	else {
@@ -85,5 +95,13 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void APlayerPawn::SetMoveInput(const FInputActionValue& val) {
 	const FVector2D input = val.Get<FVector2D>();
 
-	temp = input;
+	temp.X = input.X;
+	temp.Y = input.Y;
+}
+
+void APlayerPawn::SetLookInput(const FInputActionValue& val) {
+	const FVector2D input = val.Get<FVector2D>();
+
+	lookTemp.Pitch = input.X;
+	lookTemp.Yaw = input.Y;
 }

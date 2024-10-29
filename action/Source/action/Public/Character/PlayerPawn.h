@@ -46,7 +46,11 @@ private:
 	TObjectPtr<UInputMappingContext> pMappingContext;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pMoveInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pLookInput;
 
-	FVector2D temp;
+	FVector temp;
 	void SetMoveInput(const FInputActionValue& val);
+	FRotator lookTemp;
+	void SetLookInput(const FInputActionValue& val);
 };
