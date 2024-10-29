@@ -18,7 +18,7 @@ void AGameModeBaseInGame::BeginPlay() {
 
 	const APlayerStart* PlayerStart =
 		Cast<APlayerStart>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()));
-	UKismetSystemLibrary::PrintString(this, PlayerStart->GetActorLocation().ToString(), true, false, FColor::Red, 5.0f, TEXT("None"));
+	//UKismetSystemLibrary::PrintString(this, PlayerStart->GetActorLocation().ToString(), true, false, FColor::Red, 5.0f, TEXT("None"));
 
 	vSpawnTransform = PlayerStart->GetActorTransform();
 }

@@ -2,11 +2,15 @@
 
 
 #include "Character/PlayerPawn.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Components/InputComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 APlayerPawn::APlayerPawn() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -37,6 +41,12 @@ APlayerPawn::APlayerPawn() {
 	// ÉJÉÅÉâ
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	pCamera->SetupAttachment(pSpringArm);
+
+	// ì¸óÕÇÃìoò^
+	// Mapping Context
+	pMappingContext = LoadObject<UInputMappingContext>(NULL, TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_PlayerAction.IMC_PlayerAction'"));
+	// äeéÌì¸óÕ
+	pMoveInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Move.IA_Move'"));
 }
 
 void APlayerPawn::BeginPlay() {
@@ -49,4 +59,15 @@ void APlayerPawn::Tick(float DeltaTime) {
 
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, pCapsule->GetComponentLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
+}
+
+void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (TObjectPtr<UEnhancedInputComponent> pEnhancedInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	}
+	else {
+		UKismetSystemLibrary::PrintString(this, TEXT("Fatal"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	}
 }
