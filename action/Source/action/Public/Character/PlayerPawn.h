@@ -13,6 +13,7 @@ class USkeletalMeshComponent;
 class UCapsuleComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class UInputMappingContext;
 class UInputAction;
 /**
  * 
@@ -33,16 +34,19 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category=Component)
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<UCapsuleComponent> pCapsule;
-	UPROPERTY(VisibleAnywhere, Category = Component)
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<USkeletalMeshComponent> pMesh;
-	UPROPERTY(VisibleAnywhere, Category = Component)
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<UCameraComponent> pCamera;
-	UPROPERTY(VisibleAnywhere, Category = Component)
+	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<USpringArmComponent> pSpringArm;
-	UPROPERTY(VisibleAnyWhere, Category=Input)
-	class UInputMappingContext* pMappingContext;
-	UPROPERTY(VisibleAnyWhere, Category=Input)
-	UInputAction* pMoveInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputMappingContext> pMappingContext;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pMoveInput;
+
+	FVector2D temp;
+	void SetMoveInput(const FInputActionValue& val);
 };

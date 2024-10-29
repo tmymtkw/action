@@ -12,6 +12,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+
 APlayerPawn::APlayerPawn() {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -52,6 +53,12 @@ APlayerPawn::APlayerPawn() {
 void APlayerPawn::BeginPlay() {
 	Super::BeginPlay();
 
+	if (const APlayerController* playerController = Cast<APlayerController>(Controller)) {
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer())) {
+			Subsystem->AddMappingContext(pMappingContext, 0);
+		}
+	}
 }
 
 void APlayerPawn::Tick(float DeltaTime) {
@@ -59,15 +66,24 @@ void APlayerPawn::Tick(float DeltaTime) {
 
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, pCapsule->GetComponentLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, temp.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 }
 
 void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (TObjectPtr<UEnhancedInputComponent> pEnhancedInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+		pEnhancedInput->BindAction(pMoveInput, ETriggerEvent::Triggered, this, &APlayerPawn::SetMoveInput);
+		pEnhancedInput->BindAction(pMoveInput, ETriggerEvent::Completed, this, &APlayerPawn::SetMoveInput);
 		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
 	else {
 		UKismetSystemLibrary::PrintString(this, TEXT("Fatal"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
+}
+
+void APlayerPawn::SetMoveInput(const FInputActionValue& val) {
+	const FVector2D input = val.Get<FVector2D>();
+
+	temp = input;
 }
