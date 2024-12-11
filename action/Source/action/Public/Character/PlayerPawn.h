@@ -13,6 +13,7 @@ class USkeletalMeshComponent;
 class UCapsuleComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class UPlayerPawnMovementComponent;
 class UInputMappingContext;
 class UInputAction;
 /**
@@ -42,6 +43,8 @@ private:
 	TObjectPtr<UCameraComponent> pCamera;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<USpringArmComponent> pSpringArm;
+	UPROPERTY(VisibleAnyWhere, Category = "Component")
+	TObjectPtr<UPlayerPawnMovementComponent> pPawnMove;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> pMappingContext;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
@@ -49,8 +52,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pLookInput;
 
-	FVector temp;
+	FRotator rLookInput;
+
 	void SetMoveInput(const FInputActionValue& val);
-	FRotator lookTemp;
 	void SetLookInput(const FInputActionValue& val);
+
+	void UpdateCameraAngle();
 };

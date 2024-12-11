@@ -19,8 +19,24 @@ public:
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetRotatedComponent(TObjectPtr<USceneComponent> newRotatedComponent);
+
+	void SetInput(const FVector2D& val);
+
+	void UpdatePawnMovement(float DeltaTime, const FRotator& cameraAngle);
+
+	void UpdateComponentRotation(float DeltaTime);
+
 protected:
 	
 private:
+	FVector vInput;
 
+	FVector vRotatedInput;
+
+	TObjectPtr<USceneComponent> rotatedComponent;
+
+	void GetRotatedInput(const FRotator& cameraAngle);
+
+	FVector GetVelocity(float DeltaTime);
 };

@@ -11,6 +11,7 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Character/PlayerPawnMovementComponent.h"
 
 
 APlayerPawn::APlayerPawn() {
@@ -38,10 +39,18 @@ APlayerPawn::APlayerPawn() {
 	pSpringArm->SetupAttachment(pCapsule);
 	pSpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 80.0f), FRotator(-10.0f, 0.0f, 0.0f));
 	pSpringArm->TargetArmLength = 300.f;
+	pSpringArm->bInheritPitch = false;
+	pSpringArm->bInheritYaw = false;
+	pSpringArm->bInheritRoll = false;
 
 	// カメラ
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	pCamera->SetupAttachment(pSpringArm);
+
+	// 移動コンポーネント
+	pPawnMove = CreateDefaultSubobject<UPlayerPawnMovementComponent>(TEXT("PawnMove"));
+	pPawnMove->SetUpdatedComponent(RootComponent);
+	pPawnMove->SetRotatedComponent(pMesh);
 
 	// 入力の登録
 	// Mapping Context
@@ -61,19 +70,25 @@ void APlayerPawn::BeginPlay() {
 		}
 	}
 
-	temp = FVector::Zero();
-	lookTemp = FRotator::ZeroRotator;
+	rLookInput = FRotator::ZeroRotator;
 }
 
 void APlayerPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	pCapsule->AddRelativeLocation(temp);
+	// pCapsule->AddRelativeLocation(temp);
+
+	this->UpdateCameraAngle();
+
+	pPawnMove->UpdatePawnMovement(DeltaTime, pSpringArm->GetComponentRotation());
 
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
-	UKismetSystemLibrary::PrintString(this, pCapsule->GetComponentLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
-	UKismetSystemLibrary::PrintString(this, temp.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
-	UKismetSystemLibrary::PrintString(this, lookTemp.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, rLookInput.ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, pSpringArm->GetComponentRotation().ToString(), true, false, FColor::Red, DeltaTime, TEXT("None"));
+
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), GetActorLocation()+GetActorUpVector()*100.0f - GetActorForwardVector() * 25.0f, GetActorLocation()+GetActorUpVector() * 100.0f + GetActorForwardVector() * 25.0f, 50.0f, FColor::Blue, DeltaTime * 1.1f, 1.0f);
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), GetActorLocation()+GetActorUpVector()*100.0f, GetActorLocation()+GetActorUpVector() * 100.0f + FVector(pSpringArm->GetForwardVector().X, pSpringArm->GetForwardVector().Y, 0.0f) * 25.0f, 50.0f, FColor::Blue, DeltaTime * 1.1f, 1.0f);
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), RootComponent->GetComponentLocation(), RootComponent->GetComponentLocation() + GetActorUpVector() * 100.0f, 50.0f, FColor::White, DeltaTime * 1.1f, 1.0f);
 }
 
 void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
@@ -95,13 +110,24 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void APlayerPawn::SetMoveInput(const FInputActionValue& val) {
 	const FVector2D input = val.Get<FVector2D>();
 
-	temp.X = input.X;
-	temp.Y = input.Y;
+	pPawnMove->SetInput(input);
 }
 
 void APlayerPawn::SetLookInput(const FInputActionValue& val) {
 	const FVector2D input = val.Get<FVector2D>();
 
-	lookTemp.Pitch = input.X;
-	lookTemp.Yaw = input.Y;
+	rLookInput.Pitch = input.Y;
+	rLookInput.Yaw = input.X;
+}
+
+void APlayerPawn::UpdateCameraAngle() {
+	FRotator cameraAngle = pSpringArm->GetComponentRotation();
+
+	// TODO: ロックオン時の挙動
+	if (rLookInput.IsNearlyZero()) return;
+
+	cameraAngle += rLookInput;
+	cameraAngle.Pitch = FMath::Clamp(cameraAngle.Pitch, -85.0f, 60.0f);
+
+	pSpringArm->SetWorldRotation(cameraAngle);
 }
