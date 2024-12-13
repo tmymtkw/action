@@ -7,6 +7,7 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
+#include "PlayerStatus.h"
 #include "PlayerPawn.generated.h"
 
 class USkeletalMeshComponent;
@@ -35,6 +36,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	PlayerStatus params;
+
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<UCapsuleComponent> pCapsule;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -51,11 +54,35 @@ private:
 	TObjectPtr<UInputAction> pMoveInput;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pLookInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pBlinkInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pSprintInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pHealInput;
 
 	FRotator rLookInput;
 
+	float HP;
+
+	float AP;
+
+	float SP;
+
+	bool bBlink;
+	float fBlinkTime;
+
+	bool bSprint;
+
+	bool bHeal;
+
 	void SetMoveInput(const FInputActionValue& val);
 	void SetLookInput(const FInputActionValue& val);
+	void SetHealInput(const FInputActionValue& val);
+	void SetBlinkInput();
+	void SetSprintInput();
 
 	void UpdateCameraAngle();
+
+	void HealHP(const float& DeltaTime);
 };

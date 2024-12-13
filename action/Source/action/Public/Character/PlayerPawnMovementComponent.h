@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "MovementStatus.h"
 #include "PlayerPawnMovementComponent.generated.h"
 
 /**
@@ -23,9 +24,15 @@ public:
 
 	void SetInput(const FVector2D& val);
 
-	void UpdatePawnMovement(float DeltaTime, const FRotator& cameraAngle);
+	void SetSprintInput();
 
-	void UpdateComponentRotation(float DeltaTime);
+	void SetBlinkDirection(const FRotator& cameraAngle);
+
+	void UpdatePawnMovement(const float& DeltaTime, bool isBlink, const FRotator& cameraAngle);
+
+	void UpdateComponentRotation(const float& DeltaTime);
+
+	FString GetInputValue();
 
 protected:
 	
@@ -34,9 +41,23 @@ private:
 
 	FVector vRotatedInput;
 
+	FVector vBlinkDir;
+
 	TObjectPtr<USceneComponent> rotatedComponent;
+
+	void GetIsGround(FHitResult& hitResult);
 
 	void GetRotatedInput(const FRotator& cameraAngle);
 
-	FVector GetVelocity(float DeltaTime);
+	FVector GetVelocity(const float& DeltaTime, bool& isBlink);
+
+	bool bIsGround;
+
+	bool bSprint;
+
+	float fJumpSpeed;
+
+	FVector_NetQuantizeNormal hitGround;
+
+	MovementStatus params;
 };
