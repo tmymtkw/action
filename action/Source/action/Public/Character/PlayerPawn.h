@@ -93,6 +93,10 @@ private:
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjects;
 
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
 	void SetMoveInput(const FInputActionValue& val);
 	void SetLookInput(const FInputActionValue& val);
 	void SetHealInput(const FInputActionValue& val);
@@ -104,4 +108,8 @@ private:
 	void HealHP(const float& DeltaTime);
 
 	void UpdateCameraLock();
+
+	void SetCameraLag(float val);
+
+	void SetCameraRotationLag(float val);
 };

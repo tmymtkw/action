@@ -127,7 +127,7 @@ void UPlayerPawnMovementComponent::GetIsGround(FHitResult& hitResult) {
 		UpdatedComponent->GetComponentLocation() - FVector::UpVector * 65.0f,
 		UpdatedComponent->GetComponentLocation() - FVector::UpVector * 75.0f,
 		20.0f,
-		UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		UEngineTypes::ConvertToTraceType(ECC_WorldStatic),
 		false,
 		TArray<AActor*>{ PawnOwner },
 		EDrawDebugTrace::ForOneFrame,

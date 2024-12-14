@@ -3,9 +3,9 @@
 struct MovementStatus {
 	// XY方向の移動パラメータ
 	// 歩行速度
-	const float WALK = 300.0f;
+	const float WALK = 200.0f;
 	// スプリント速度
-	const float SPRINT = 150.0f;
+	const float SPRINT = 100.0f;
 
 	// Z方向の移動パラメータ
 	// ジャンプ初速度
@@ -17,7 +17,7 @@ struct MovementStatus {
 
 	// ブリンクパラメータ
 	// ブリンク速度
-	const float BLINK = 1000.0f;
+	const float BLINK = 500.0f;
 	// ブリンク時間
 	const float BLINKTIME = 1.0f;
 	//const float BLINKDEC = 5.0f;

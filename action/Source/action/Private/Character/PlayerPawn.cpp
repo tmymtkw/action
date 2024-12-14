@@ -23,6 +23,7 @@ APlayerPawn::APlayerPawn() {
 	pBody->SetHiddenInGame(false);
 	pBody->SetSimulatePhysics(false);
 	pBody->SetCollisionProfileName("CharacterCollision");
+	pBody->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBegin);
 	// TODO: Set Root Component
 	pBody->SetupAttachment(RootComponent);
 
@@ -43,6 +44,10 @@ APlayerPawn::APlayerPawn() {
 	pSpringArm->bInheritPitch = false;
 	pSpringArm->bInheritYaw = false;
 	pSpringArm->bInheritRoll = false;
+	pSpringArm->bEnableCameraLag = true;
+	pSpringArm->bEnableCameraRotationLag = true;
+	SetCameraLag(100.0f);
+	SetCameraRotationLag(0.0f);
 
 	// カメラ
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -108,7 +113,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 
 	// SPの回復
 	if (fBlinkTime <= 0.0f) {
-		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, params.MaxPower - HP - AP);
+		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, params.MaxPower - HP);
 	}
 
 	// HPの回復(入力がある時のみ)
@@ -154,6 +159,15 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		UKismetSystemLibrary::PrintString(this, TEXT("Fatal"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
 }
+
+// キャラクターが攻撃に接触したときに呼ばれる関数
+void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	// 例外処理
+	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
+
+	UKismetSystemLibrary::PrintString(this, TEXT("Input"), true, false, FColor::Red, 5.0f, TEXT("None"));
+}
+
 
 // 移動入力を取得する関数
 void APlayerPawn::SetMoveInput(const FInputActionValue& val) {
@@ -263,6 +277,9 @@ void APlayerPawn::UpdateCameraLock() {
 	if (bCameraLock) {
 		bCameraLock = false;
 		lockingEnemy = nullptr;
+
+		SetCameraLag(100.0f);
+		SetCameraRotationLag(5.0f);
 	}
 	// ロックオンを行う場合
 	else {
@@ -288,12 +305,23 @@ void APlayerPawn::UpdateCameraLock() {
 		if (!bCameraLock) return;
 
 		lockingEnemy = HitResults.Top().GetActor();
+		SetCameraLag(5.0f);
+		SetCameraRotationLag(5.0f);
+		
 		if (!GEngine) return;
 		for (auto& hit : HitResults) {
 			AActor* enemy = hit.GetActor();
 			UKismetSystemLibrary::DrawDebugString(GetWorld(), enemy->GetActorLocation(), FString::Printf(TEXT("Enemy")), nullptr, FLinearColor::Red, 3.0f);
 		}
 	}
+}
+
+void APlayerPawn::SetCameraLag(float val) {
+	pSpringArm->CameraLagSpeed = val;
+}
+
+void APlayerPawn::SetCameraRotationLag(float val) {
+	pSpringArm->CameraRotationLagSpeed = val;
 }
 
 // 現在のHPを取得する関数
