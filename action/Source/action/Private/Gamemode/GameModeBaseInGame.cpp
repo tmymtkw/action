@@ -6,11 +6,11 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
-//#include "StatusHUD.h"
+#include "UI/InGameHUD.h"
 
 AGameModeBaseInGame::AGameModeBaseInGame() {
 	DefaultPawnClass = APlayerPawn::StaticClass();
-	//HUDClass = AStatusHUD::StaticClass();
+	HUDClass = AInGameHUD::StaticClass();
 }
 
 void AGameModeBaseInGame::BeginPlay() {

@@ -103,7 +103,9 @@ void APlayerPawn::Tick(float DeltaTime) {
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
 
 	// SPの回復
-	SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, params.MaxPower - HP);
+	if (fBlinkTime <= 0.0f) {
+		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, params.MaxPower - HP - AP);
+	}
 
 	// HPの回復(入力がある時のみ)
 	if (bHeal) {
@@ -170,7 +172,8 @@ void APlayerPawn::SetBlinkInput() {
 	bBlink = !bBlink;
 
 	// スタミナが不足している場合
-	if (AP + SP < 10.0f) return;
+	//if (AP + SP < 10.0f) return;
+	if (SP < 10.0f) return;
 
 	// すでにブリンク状態の場合
 	if (0.0f < fBlinkTime) return;
@@ -184,7 +187,7 @@ void APlayerPawn::SetBlinkInput() {
 	// SPが0になる(APを消費する)場合
 	else {
 		SP = -10.0f;
-		AP = FMathf::Max(AP - (params.BlinkPower - SP), 0.0f);
+		//AP = FMathf::Max(AP - (params.BlinkPower - SP), 0.0f);
 	}
 
 	// ブリンク時間を設定
@@ -223,7 +226,26 @@ void APlayerPawn::UpdateCameraAngle() {
 	pSpringArm->SetWorldRotation(cameraAngle);
 }
 
+// APを用いて回復を行う関数
 void APlayerPawn::HealHP(const float& DeltaTime) {
+	// APがない場合
+	if (AP <= 0.0f) {
+		return;
+	}
+
+	// 回復処理
 	HP = FMathf::Min(HP + params.HealHPValue * params.HealHPRatio * DeltaTime, params.HPMax);
 	AP = FMathf::Max(AP - params.HealHPValue * DeltaTime, 0.0f);
 }
+
+// 現在のHPを取得する関数
+float APlayerPawn::GetHPVal() { return HP; }
+
+// 現在のAPを取得する関数
+float APlayerPawn::GetAPVal() { return AP; }
+
+// 現在のSPを取得する関数
+float APlayerPawn::GetSPVal() { return SP; }
+
+// ゲージの最大値を取得する関数
+float APlayerPawn::GetMaxPower() { return params.MaxPower; }

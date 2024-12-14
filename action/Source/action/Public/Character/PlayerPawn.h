@@ -32,6 +32,14 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	float GetHPVal();
+
+	float GetAPVal();
+
+	float GetSPVal();
+
+	float GetMaxPower();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -61,6 +69,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pHealInput;
 
+	UPROPERTY()
 	FRotator rLookInput;
 
 	float HP;

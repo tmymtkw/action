@@ -6,15 +6,15 @@ public:
 	float MaxPower = 100.0f;
 
 	// HP
-	// HP + SP = MaxPower
+	// HP + AP + SP = MaxPower
 	// 0 < AP < SP -> AP‚ğÁ”ï‚µ‚Ä‚àSP‚É‚Í‰e‹¿‚È‚µ
 	float HP = 50.0f;
 
 	float HPMax = 50.0f;
 
 	// ‰ñ•œ‘¬“x
-	float HealHPValue = 5.0f;
-	float HealSPValue = 10.0f;
+	float HealHPValue = 70.0f;
+	float HealSPValue = 50.0f;
 	float HealHPRatio = 0.5f;
 
 	// ƒuƒŠƒ“ƒNŠÔ

@@ -37,12 +37,13 @@ public:
 protected:
 	
 private:
+	UPROPERTY()
 	FVector vInput;
-
+	UPROPERTY()
 	FVector vRotatedInput;
-
+	UPROPERTY()
 	FVector vBlinkDir;
-
+	UPROPERTY()
 	TObjectPtr<USceneComponent> rotatedComponent;
 
 	void GetIsGround(FHitResult& hitResult);
@@ -56,7 +57,7 @@ private:
 	bool bSprint;
 
 	float fJumpSpeed;
-
+	UPROPERTY()
 	FVector_NetQuantizeNormal hitGround;
 
 	MovementStatus params;
