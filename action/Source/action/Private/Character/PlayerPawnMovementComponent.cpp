@@ -23,7 +23,7 @@ void UPlayerPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTic
 }
 
 // 移動を行う関数
-void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bool isBlink, const FRotator& cameraAngle) {
+void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bool isBlink, bool isCameraLock, const FRotator& cameraAngle) {
 	// 例外処理
 	if (!PawnOwner || !UpdatedComponent || ShouldSkipUpdate(DeltaTime)) return;
 
@@ -40,7 +40,8 @@ void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bo
 	Velocity = GetVelocity(DeltaTime, isBlink);
 
 	// 移動方向に応じたメッシュの回転
-	UpdateComponentRotation(DeltaTime);
+	// ロックオンしている場合 TODO
+	UpdateComponentRotation(DeltaTime, isBlink, isCameraLock);
 
 	// 障害物との衝突を考慮した移動
 	if (!Velocity.IsNearlyZero()) {
@@ -59,7 +60,7 @@ void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bo
 }
 
 // コンポーネントを移動方向に回転させる関数
-void UPlayerPawnMovementComponent::UpdateComponentRotation(const float& DeltaTime) {
+void UPlayerPawnMovementComponent::UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock) {
 	// TODO: 回転させない例外処理
 
 	// 角度の差

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "BaseCharacterPawn.generated.h"
 
 UCLASS()
@@ -18,6 +20,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	TObjectPtr<UCapsuleComponent> pBody;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	TObjectPtr<USkeletalMeshComponent> pMesh;
 
 public:	
 	// Called every frame

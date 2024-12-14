@@ -4,8 +4,8 @@
 #include "Character/PlayerPawn.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/CapsuleComponent.h"
+//#include "Components/SkeletalMeshComponent.h"
+//#include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/InputComponent.h"
@@ -18,26 +18,26 @@ APlayerPawn::APlayerPawn() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	// 当たり判定
-	pCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
-	pCapsule->SetCapsuleSize(30.0f, 90.0f);
-	pCapsule->SetHiddenInGame(false);
-	pCapsule->SetSimulatePhysics(false);
-	pCapsule->SetCollisionProfileName("CharacterCollision");
+	pBody = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
+	pBody->SetCapsuleSize(30.0f, 90.0f);
+	pBody->SetHiddenInGame(false);
+	pBody->SetSimulatePhysics(false);
+	pBody->SetCollisionProfileName("CharacterCollision");
 	// TODO: Set Root Component
-	pCapsule->SetupAttachment(RootComponent);
+	pBody->SetupAttachment(RootComponent);
 
 	// メッシュ
 	TObjectPtr<USkeletalMesh> mesh =
 		LoadObject<USkeletalMesh>(nullptr, TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	pMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	pMesh->SetSkeletalMesh(mesh);
-	pMesh->SetupAttachment(pCapsule);
+	pMesh->SetupAttachment(pBody);
 	pMesh->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FQuat(FRotator(0.0f, -90.0f, 0.0f)));
 
 	// カメラ関連
 	// カメラの移動範囲
 	pSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	pSpringArm->SetupAttachment(pCapsule);
+	pSpringArm->SetupAttachment(pBody);
 	pSpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 80.0f), FRotator(-10.0f, 0.0f, 0.0f));
 	pSpringArm->TargetArmLength = 300.f;
 	pSpringArm->bInheritPitch = false;
@@ -62,15 +62,19 @@ APlayerPawn::APlayerPawn() {
 	pBlinkInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Blink.IA_Blink'"));
 	pSprintInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Sprint.IA_Sprint'"));
 	pHealInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Heal.IA_Heal'"));
+	pCameraLockInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_CameraLock.IA_CameraLock'"));
 
 	// 変数の初期化
 	bBlink = false;
 	bSprint = false;
 	bHeal = false;
+	bCameraLock = false;
 	fBlinkTime = 0.0f;
 	HP = params.HP - 30.0f;
 	AP = 30.0f;
 	SP = 50.0f;
+
+	traceObjects = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
 }
 
 // 初期化関数
@@ -97,7 +101,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 	this->UpdateCameraAngle();
 
 	// 速度の更新
-	pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), pSpringArm->GetComponentRotation());
+	pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
 
 	// ブリンク時間の更新
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
@@ -142,6 +146,7 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		pEnhancedInput->BindAction(pSprintInput, ETriggerEvent::Started, this, &APlayerPawn::SetSprintInput);
 		pEnhancedInput->BindAction(pHealInput, ETriggerEvent::Started, this, &APlayerPawn::SetHealInput);
 		pEnhancedInput->BindAction(pHealInput, ETriggerEvent::Completed, this, &APlayerPawn::SetHealInput);
+		pEnhancedInput->BindAction(pCameraLockInput, ETriggerEvent::Started, this, &APlayerPawn::UpdateCameraLock);
 
 		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
@@ -214,13 +219,27 @@ void APlayerPawn::SetHealInput(const FInputActionValue& val) {
 void APlayerPawn::UpdateCameraAngle() {
 	FRotator cameraAngle = pSpringArm->GetComponentRotation();
 
-	// TODO: ロックオン時の挙動
-	if (rLookInput.IsNearlyZero()) return;
+	// ロックオン中に敵が消滅した場合
+	if (bCameraLock && !lockingEnemy) lockingEnemy = nullptr;
 
-	// 入力角度を追加
-	cameraAngle += rLookInput;
-	// 上下方向の位置を制限
-	cameraAngle.Pitch = FMathf::Clamp(cameraAngle.Pitch, -85.0f, 60.0f);
+	// ロックオン時
+	if (bCameraLock) {
+		cameraAngle = ((lockingEnemy->GetActorLocation() - pBody->GetComponentLocation()) * 0.5f - FVector(0.0f, 0.0f, 100.0f)).Rotation();
+
+		// 上下方向の位置を制限
+		cameraAngle.Pitch = FMathf::Clamp(cameraAngle.Pitch, -30.0f, -15.0f);
+	}
+	// ロックオンしていない場合
+	else {
+		if (rLookInput.IsNearlyZero()) return;
+
+		// 入力角度を追加
+		cameraAngle += rLookInput;
+
+		// 上下方向の位置を制限
+		cameraAngle.Pitch = FMathf::Clamp(cameraAngle.Pitch, -85.0f, 60.0f);
+	}
+
 
 	// 更新したカメラ位置に設定
 	pSpringArm->SetWorldRotation(cameraAngle);
@@ -236,6 +255,45 @@ void APlayerPawn::HealHP(const float& DeltaTime) {
 	// 回復処理
 	HP = FMathf::Min(HP + params.HealHPValue * params.HealHPRatio * DeltaTime, params.HPMax);
 	AP = FMathf::Max(AP - params.HealHPValue * DeltaTime, 0.0f);
+}
+
+// カメラのロックオンを行う関数
+void APlayerPawn::UpdateCameraLock() {
+	// ロックオンを解除する場合
+	if (bCameraLock) {
+		bCameraLock = false;
+		lockingEnemy = nullptr;
+	}
+	// ロックオンを行う場合
+	else {
+		TArray<FHitResult> HitResults;
+		FVector traceStart = pBody->GetComponentLocation() + FVector::UpVector * 80.0f;
+		FVector traceEnd = traceStart + pCamera->GetForwardVector() * 1000.0f;
+		FRotator rot = pCamera->GetComponentRotation();
+
+		bCameraLock = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
+																																traceStart,
+																																traceEnd,
+																																FVector(0.0f, 300.0f, 100.0f),
+																																rot,
+																																traceObjects,
+																																false,
+																																TArray<AActor*>{ this },
+																																EDrawDebugTrace::ForDuration,
+																																HitResults,
+																																true,
+																																FColor::Green,
+																																FColor::Red);
+
+		if (!bCameraLock) return;
+
+		lockingEnemy = HitResults.Top().GetActor();
+		if (!GEngine) return;
+		for (auto& hit : HitResults) {
+			AActor* enemy = hit.GetActor();
+			UKismetSystemLibrary::DrawDebugString(GetWorld(), enemy->GetActorLocation(), FString::Printf(TEXT("Enemy")), nullptr, FLinearColor::Red, 3.0f);
+		}
+	}
 }
 
 // 現在のHPを取得する関数

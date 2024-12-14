@@ -28,9 +28,9 @@ public:
 
 	void SetBlinkDirection(const FRotator& cameraAngle);
 
-	void UpdatePawnMovement(const float& DeltaTime, bool isBlink, const FRotator& cameraAngle);
+	void UpdatePawnMovement(const float& DeltaTime, bool isBlink, bool isCameraLock, const FRotator& cameraAngle);
 
-	void UpdateComponentRotation(const float& DeltaTime);
+	void UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock);
 
 	FString GetInputValue();
 

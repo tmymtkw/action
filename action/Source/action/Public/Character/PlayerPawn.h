@@ -10,8 +10,8 @@
 #include "PlayerStatus.h"
 #include "PlayerPawn.generated.h"
 
-class USkeletalMeshComponent;
-class UCapsuleComponent;
+//class USkeletalMeshComponent;
+//class UCapsuleComponent;
 class UCameraComponent;
 class USpringArmComponent;
 class UPlayerPawnMovementComponent;
@@ -46,10 +46,10 @@ protected:
 private:
 	PlayerStatus params;
 
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	TObjectPtr<UCapsuleComponent> pCapsule;
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	TObjectPtr<USkeletalMeshComponent> pMesh;
+	//UPROPERTY(VisibleAnywhere, Category = "Component")
+	//TObjectPtr<UCapsuleComponent> pCapsule;
+	//UPROPERTY(VisibleAnywhere, Category = "Component")
+	//TObjectPtr<USkeletalMeshComponent> pMesh;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<UCameraComponent> pCamera;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -68,6 +68,8 @@ private:
 	TObjectPtr<UInputAction> pSprintInput;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pHealInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pCameraLockInput;
 
 	UPROPERTY()
 	FRotator rLookInput;
@@ -85,6 +87,12 @@ private:
 
 	bool bHeal;
 
+	bool bCameraLock;
+
+	TObjectPtr<AActor> lockingEnemy;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjects;
+
 	void SetMoveInput(const FInputActionValue& val);
 	void SetLookInput(const FInputActionValue& val);
 	void SetHealInput(const FInputActionValue& val);
@@ -94,4 +102,6 @@ private:
 	void UpdateCameraAngle();
 
 	void HealHP(const float& DeltaTime);
+
+	void UpdateCameraLock();
 };
