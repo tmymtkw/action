@@ -12,6 +12,7 @@
 
 //class USkeletalMeshComponent;
 //class UCapsuleComponent;
+class USphereComponent;
 class UCameraComponent;
 class USpringArmComponent;
 class UPlayerPawnMovementComponent;
@@ -50,6 +51,8 @@ private:
 	//TObjectPtr<UCapsuleComponent> pCapsule;
 	//UPROPERTY(VisibleAnywhere, Category = "Component")
 	//TObjectPtr<USkeletalMeshComponent> pMesh;
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	TObjectPtr<USphereComponent> pAvoid;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<UCameraComponent> pCamera;
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -95,6 +98,9 @@ private:
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
 	void SetMoveInput(const FInputActionValue& val);

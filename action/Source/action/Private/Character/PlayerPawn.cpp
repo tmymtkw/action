@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 //#include "Components/SkeletalMeshComponent.h"
 //#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/InputComponent.h"
@@ -26,6 +27,15 @@ APlayerPawn::APlayerPawn() {
 	pBody->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBegin);
 	// TODO: Set Root Component
 	pBody->SetupAttachment(RootComponent);
+
+	// 回避用コリジョン
+	pAvoid = CreateDefaultSubobject<USphereComponent>(TEXT("AvoidCollision"));
+	pAvoid->SetSphereRadius(125.0f);
+	pAvoid->SetHiddenInGame(false);
+	pAvoid->SetSimulatePhysics(false);
+	pAvoid->SetCollisionProfileName("AvoidCollision");
+	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBeginInBlinking);
+	pAvoid->SetupAttachment(pBody);
 
 	// メッシュ
 	TObjectPtr<USkeletalMesh> mesh =
@@ -165,7 +175,24 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
 
-	UKismetSystemLibrary::PrintString(this, TEXT("Input"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	if (0.2f < fBlinkTime) return;
+
+	// HPが減少, APに変換
+	HP = FMathf::Max(HP - 10.0f, 0.0f);
+	AP = FMathf::Min(AP + 10.0f, params.MaxPower - HP);
+	UKismetSystemLibrary::PrintString(this, TEXT("Damage"), true, false, FColor::Red, 5.0f, TEXT("None"));
+}
+
+// ブリンク中攻撃に接触したときに呼ばれる関数
+void APlayerPawn::OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	// 例外処理
+	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
+
+	if (fBlinkTime < 0.2f) return;
+
+	// APを獲得
+	AP = FMathf::Min(AP + 10.0f, params.MaxPower - HP);
+	UKismetSystemLibrary::PrintString(this, TEXT("Get SP"), true, false, FColor::Red, 5.0f, TEXT("None"));
 }
 
 
@@ -279,7 +306,7 @@ void APlayerPawn::UpdateCameraLock() {
 		lockingEnemy = nullptr;
 
 		SetCameraLag(100.0f);
-		SetCameraRotationLag(5.0f);
+		SetCameraRotationLag(0.0f);
 	}
 	// ロックオンを行う場合
 	else {
@@ -291,7 +318,7 @@ void APlayerPawn::UpdateCameraLock() {
 		bCameraLock = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
 																																traceStart,
 																																traceEnd,
-																																FVector(0.0f, 300.0f, 100.0f),
+																																FVector(0.0f, 500.0f, 300.0f),
 																																rot,
 																																traceObjects,
 																																false,
