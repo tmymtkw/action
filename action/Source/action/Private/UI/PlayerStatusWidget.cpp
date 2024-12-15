@@ -4,7 +4,7 @@
 #include "UI/PlayerStatusWidget.h"
 #include "Components/ProgressBar.h"
 #include "Kismet/GameplayStatics.h"
-#include "Character/PlayerPawn.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void UPlayerStatusWidget::NativeConstruct() {
 	Super::NativeConstruct();
@@ -16,39 +16,43 @@ bool UPlayerStatusWidget::Initialize() {
 	GetPlayerPawn();
 
 	if (bSuccess) {
-		HPBar->PercentDelegate.BindUFunction(this, "GetHPPercent");
-		APBar->PercentDelegate.BindUFunction(this, "GetAPPercent");
-		SPBar->PercentDelegate.BindUFunction(this, "GetSPPercent");
+		playerHPBar->PercentDelegate.BindUFunction(this, "GetPlayerHPPercent");
+		playerAPBar->PercentDelegate.BindUFunction(this, "GetPlayerAPPercent");
+		playerSPBar->PercentDelegate.BindUFunction(this, "GetPlayerSPPercent");
+		UKismetSystemLibrary::PrintString(this, TEXT("success"), true, false, FColor::White, 5.0f, TEXT("None"));
+	}
+	else {
+		UKismetSystemLibrary::PrintString(this, TEXT("fatal"), true, false, FColor::White, 5.0f, TEXT("None"));
 	}
 
-	return !pPlayer && bSuccess;
+	return bSuccess;
 }
 
-float UPlayerStatusWidget::GetHPPercent() {
+float UPlayerStatusWidget::GetPlayerHPPercent() {
 	if (!pPlayer) {
 		GetPlayerPawn();
 		return 0.0f;
 	}
 
-	return pPlayer->GetHPVal() / pPlayer->GetMaxPower();
+	return pPlayer->GetHPVal() / pPlayer->GetMaxPowerVal();
 }
 
-float UPlayerStatusWidget::GetAPPercent() {
+float UPlayerStatusWidget::GetPlayerAPPercent() {
 	if (!pPlayer) {
 		GetPlayerPawn();
 		return 0.0f;
 	}
 
-	return (pPlayer->GetHPVal() + pPlayer->GetAPVal()) / pPlayer->GetMaxPower();
+	return (pPlayer->GetHPVal() + pPlayer->GetAPVal()) / pPlayer->GetMaxPowerVal();
 }
 
-float UPlayerStatusWidget::GetSPPercent() {
+float UPlayerStatusWidget::GetPlayerSPPercent() {
 	if (!pPlayer) {
 		GetPlayerPawn();
 		return 0.0f;
 	}
 
-	return pPlayer->GetSPVal() / pPlayer->GetMaxPower();
+	return pPlayer->GetSPVal() / pPlayer->GetMaxPowerVal();
 
 }
 

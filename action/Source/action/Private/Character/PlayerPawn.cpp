@@ -57,7 +57,7 @@ APlayerPawn::APlayerPawn() {
 	pSpringArm->bEnableCameraLag = true;
 	pSpringArm->bEnableCameraRotationLag = true;
 	SetCameraLag(100.0f);
-	SetCameraRotationLag(0.0f);
+	SetCameraRotationLag(100.0f);
 
 	// カメラ
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -85,7 +85,8 @@ APlayerPawn::APlayerPawn() {
 	bHeal = false;
 	bCameraLock = false;
 	fBlinkTime = 0.0f;
-	HP = params.HP - 30.0f;
+	fHP = params.HP - 30.0f;
+	fMaxPower = params.MaxPower;
 	AP = 30.0f;
 	SP = 50.0f;
 
@@ -123,7 +124,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 
 	// SPの回復
 	if (fBlinkTime <= 0.0f) {
-		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, params.MaxPower - HP);
+		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, fMaxPower - fHP);
 	}
 
 	// HPの回復(入力がある時のみ)
@@ -132,7 +133,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 	}
 
 	// デバッグ
-	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(HP) + TEXT(" ") + FString::SanitizeFloat(AP) + TEXT(" ") + FString::SanitizeFloat(SP), true, false, FColor::White, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fHP) + TEXT(" ") + FString::SanitizeFloat(AP) + TEXT(" ") + FString::SanitizeFloat(SP), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, pSpringArm->GetComponentRotation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::PrintString(this, bSprint ? TEXT("Sprint : true") : TEXT("Sprint : false"), true, false, FColor::Red, DeltaTime, TEXT("None"));
@@ -178,8 +179,8 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	if (0.2f < fBlinkTime) return;
 
 	// HPが減少, APに変換
-	HP = FMathf::Max(HP - 10.0f, 0.0f);
-	AP = FMathf::Min(AP + 10.0f, params.MaxPower - HP);
+	fHP = FMathf::Max(fHP - 10.0f, 0.0f);
+	AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
 	UKismetSystemLibrary::PrintString(this, TEXT("Damage"), true, false, FColor::Red, 5.0f, TEXT("None"));
 }
 
@@ -191,7 +192,7 @@ void APlayerPawn::OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, 
 	if (fBlinkTime < 0.2f) return;
 
 	// APを獲得
-	AP = FMathf::Min(AP + 10.0f, params.MaxPower - HP);
+	AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
 	UKismetSystemLibrary::PrintString(this, TEXT("Get SP"), true, false, FColor::Red, 5.0f, TEXT("None"));
 }
 
@@ -294,7 +295,7 @@ void APlayerPawn::HealHP(const float& DeltaTime) {
 	}
 
 	// 回復処理
-	HP = FMathf::Min(HP + params.HealHPValue * params.HealHPRatio * DeltaTime, params.HPMax);
+	fHP = FMathf::Min(fHP + params.HealHPValue * params.HealHPRatio * DeltaTime, params.HPMax);
 	AP = FMathf::Max(AP - params.HealHPValue * DeltaTime, 0.0f);
 }
 
@@ -306,7 +307,7 @@ void APlayerPawn::UpdateCameraLock() {
 		lockingEnemy = nullptr;
 
 		SetCameraLag(100.0f);
-		SetCameraRotationLag(0.0f);
+		SetCameraRotationLag(100.0f);
 	}
 	// ロックオンを行う場合
 	else {
@@ -315,23 +316,25 @@ void APlayerPawn::UpdateCameraLock() {
 		FVector traceEnd = traceStart + pCamera->GetForwardVector() * 1000.0f;
 		FRotator rot = pCamera->GetComponentRotation();
 
-		bCameraLock = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-																																traceStart,
-																																traceEnd,
-																																FVector(0.0f, 500.0f, 300.0f),
-																																rot,
-																																traceObjects,
-																																false,
-																																TArray<AActor*>{ this },
-																																EDrawDebugTrace::ForDuration,
-																																HitResults,
-																																true,
-																																FColor::Green,
-																																FColor::Red);
+		bCameraLock = UKismetSystemLibrary::BoxTraceMultiForObjects(
+			GetWorld(),
+			traceStart,
+			traceEnd,
+			FVector(0.0f, 500.0f, 300.0f),
+			rot,
+			traceObjects,
+			false,
+			TArray<AActor*>{ this },
+			EDrawDebugTrace::ForDuration,
+			HitResults,
+			true,
+			FColor::Green,
+			FColor::Red
+		);
 
 		if (!bCameraLock) return;
 
-		lockingEnemy = HitResults.Top().GetActor();
+		lockingEnemy = Cast<ABaseCharacterPawn>(HitResults.Top().GetActor());
 		SetCameraLag(5.0f);
 		SetCameraRotationLag(5.0f);
 		
@@ -351,8 +354,8 @@ void APlayerPawn::SetCameraRotationLag(float val) {
 	pSpringArm->CameraRotationLagSpeed = val;
 }
 
-// 現在のHPを取得する関数
-float APlayerPawn::GetHPVal() { return HP; }
+//// 現在のHPを取得する関数
+//float APlayerPawn::GetHPVal() { return HP; }
 
 // 現在のAPを取得する関数
 float APlayerPawn::GetAPVal() { return AP; }
@@ -360,5 +363,14 @@ float APlayerPawn::GetAPVal() { return AP; }
 // 現在のSPを取得する関数
 float APlayerPawn::GetSPVal() { return SP; }
 
-// ゲージの最大値を取得する関数
-float APlayerPawn::GetMaxPower() { return params.MaxPower; }
+//// ゲージの最大値を取得する関数
+//float APlayerPawn::GetMaxPower() { return params.MaxPower; }
+
+// ロック中の敵ポインタを取得する関数
+TObjectPtr<ABaseCharacterPawn> APlayerPawn::GetLockingEnemy() {
+	if (!lockingEnemy) return nullptr;
+
+	return lockingEnemy;
+}
+
+bool APlayerPawn::GetIsCameraLock() { return bCameraLock; }

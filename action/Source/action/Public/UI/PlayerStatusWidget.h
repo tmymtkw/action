@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/PlayerPawn.h"
 #include "PlayerStatusWidget.generated.h"
 
-class APlayerPawn;
 class UProgressBar;
 /**
  * 
@@ -21,22 +21,23 @@ protected:
 
 	virtual bool Initialize() override;
 
-private:
 	UPROPERTY()
 	TObjectPtr<APlayerPawn> pPlayer;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UProgressBar> HPBar;
+	TObjectPtr<UProgressBar> playerHPBar;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UProgressBar> APBar;
+	TObjectPtr<UProgressBar> playerAPBar;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UProgressBar> SPBar;
-	
+	TObjectPtr<UProgressBar> playerSPBar;
+
 	UFUNCTION()
-	float GetHPPercent();
+	float GetPlayerHPPercent();
 	UFUNCTION()
-	float GetAPPercent();
+	float GetPlayerAPPercent();
 	UFUNCTION()
-	float GetSPPercent();
+	float GetPlayerSPPercent();
 
 	void GetPlayerPawn();
+
+private:
 };

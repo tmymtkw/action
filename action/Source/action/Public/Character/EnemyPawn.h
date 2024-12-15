@@ -17,11 +17,14 @@ class ACTION_API AEnemyPawn : public ABaseCharacterPawn
 public:
 	AEnemyPawn();
 
+	float GetHPVal();
+
+	float GetMaxHPVal();
+
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
-
-
 private:
-
 };

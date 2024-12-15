@@ -33,13 +33,17 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	float GetHPVal();
+	//float GetHPVal();
 
 	float GetAPVal();
 
 	float GetSPVal();
 
-	float GetMaxPower();
+	//float GetMaxPower();
+
+	TObjectPtr<ABaseCharacterPawn> GetLockingEnemy();
+
+	bool GetIsCameraLock();
 
 protected:
 	virtual void BeginPlay() override;
@@ -77,7 +81,7 @@ private:
 	UPROPERTY()
 	FRotator rLookInput;
 
-	float HP;
+	//float HP;
 
 	float AP;
 
@@ -92,7 +96,7 @@ private:
 
 	bool bCameraLock;
 
-	TObjectPtr<AActor> lockingEnemy;
+	TObjectPtr<ABaseCharacterPawn> lockingEnemy;
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjects;
 

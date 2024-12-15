@@ -32,3 +32,6 @@ void ABaseCharacterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 }
 
+float ABaseCharacterPawn::GetHPVal() { return fHP; }
+
+float ABaseCharacterPawn::GetMaxPowerVal() { return fMaxPower; }

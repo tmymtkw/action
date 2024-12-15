@@ -25,6 +25,15 @@ AEnemyPawn::AEnemyPawn() {
 
 }
 
+void AEnemyPawn::BeginPlay() {
+	fMaxPower = 100.0f;
+	fHP = fMaxPower;
+}
+
 void AEnemyPawn::Tick(float DeltaTime) {
 
 }
+
+float AEnemyPawn::GetHPVal() { return fHP; }
+
+float AEnemyPawn::GetMaxHPVal() { return fMaxPower; }

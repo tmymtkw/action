@@ -27,6 +27,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	TObjectPtr<USkeletalMeshComponent> pMesh;
 
+	float fHP;
+
+	float fMaxPower;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -34,6 +38,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	float GetHPVal();
+
+	float GetMaxPowerVal();
+
 private:
 	bool bPlayer;
+
 };
