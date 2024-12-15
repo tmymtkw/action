@@ -7,7 +7,6 @@
 #include "Components/ProgressBar.h"
 #include "EnemyWidget.generated.h"
 
-class AEnemyPawn;
 /**
  * 
  */

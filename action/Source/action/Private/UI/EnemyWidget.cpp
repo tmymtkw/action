@@ -2,7 +2,6 @@
 
 
 #include "UI/EnemyWidget.h"
-#include "Character/EnemyPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
