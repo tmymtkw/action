@@ -8,14 +8,23 @@
 #include "Blueprint/UserWidget.h"
 
 void AInGameHUD::BeginPlay() {
-	FString StatusWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Player/BPW_Status.BPW_Status_C'");
-	TSubclassOf<UUserWidget> StatusWidgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*StatusWidgetPath)).LoadSynchronous();
-	if (!StatusWidgetClass) UKismetSystemLibrary::PrintString(this, TEXT("Fatal"), true, false, FColor::Red, 5.0f, TEXT("None"));
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	FString statusWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Player/BPW_Status.BPW_Status_C'");
+	FString debugWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Debug/BPW_PlayerStatusDebug.BPW_PlayerStatusDebug_C'");
+	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
-	if (StatusWidgetClass && PlayerController) {
-		TObjectPtr<UUserWidget> StatusWidget = UWidgetBlueprintLibrary::Create(GetWorld(), StatusWidgetClass, PlayerController);
-		//StatusWidget->SetVisibility(ESlateVisibility::Collapsed);
-		StatusWidget->AddToViewport(0);
+	AddWidgetToViewport(statusWidgetPath, 0, playerController);
+	AddWidgetToViewport(debugWidgetPath, 1, playerController);
+}
+
+void AInGameHUD::AddWidgetToViewport(FString path, int32 index, APlayerController* controller) {
+	TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
+
+	if (!widgetClass || !controller) {
+		UKismetSystemLibrary::PrintString(this, TEXT("Failed to add widget"), true, false, FColor::Red, 5.0f, TEXT("None"));
+		return;
 	}
+
+	TObjectPtr<UUserWidget> newWidget = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, controller);
+
+	newWidget->AddToViewport(index);
 }

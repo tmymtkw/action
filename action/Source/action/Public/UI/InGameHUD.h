@@ -20,5 +20,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-
+private:
+	void AddWidgetToViewport(FString path, int32 index, APlayerController* controller);
 };

@@ -19,7 +19,7 @@ UPlayerPawnMovementComponent::UPlayerPawnMovementComponent() {
 }
 
 void UPlayerPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	UKismetSystemLibrary::PrintString(this, TEXT("PawnMovement Tick"), true, false, FColor::Red, DeltaTime, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, TEXT("Error: PawnMovement Tick Enabled"), true, false, FColor::Red, DeltaTime, TEXT("None"));
 }
 
 // 移動を行う関数
@@ -54,7 +54,7 @@ void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bo
 	UpdateComponentVelocity();
 
 	// デバッグ
-	UKismetSystemLibrary::PrintString(this, Velocity.ToString(), true, false, FColor::Red, DeltaTime, TEXT("None"));
+	//UKismetSystemLibrary::PrintString(this, Velocity.ToString(), true, false, FColor::Red, DeltaTime, TEXT("None"));
 	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), UpdatedComponent->GetComponentLocation(), UpdatedComponent->GetComponentLocation() + vBlinkDir * 100.0f, 50.0f, FColor::Red, DeltaTime * 1.1f, 1.0f);
 
 }
