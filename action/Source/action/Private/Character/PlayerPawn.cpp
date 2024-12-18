@@ -4,8 +4,6 @@
 #include "Character/PlayerPawn.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-//#include "Components/SkeletalMeshComponent.h"
-//#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -13,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/PlayerPawnMovementComponent.h"
+#include "GameElements/DamageCube.h"
 
 // コンストラクタ
 APlayerPawn::APlayerPawn() {
@@ -78,6 +77,7 @@ APlayerPawn::APlayerPawn() {
 	pSprintInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Sprint.IA_Sprint'"));
 	pHealInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Heal.IA_Heal'"));
 	pCameraLockInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_CameraLock.IA_CameraLock'"));
+	pWeakAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_WeakAttack.IA_WeakAttack'"));
 
 	// 変数の初期化
 	bBlink = false;
@@ -163,6 +163,7 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		pEnhancedInput->BindAction(pHealInput, ETriggerEvent::Started, this, &APlayerPawn::SetHealInput);
 		pEnhancedInput->BindAction(pHealInput, ETriggerEvent::Completed, this, &APlayerPawn::SetHealInput);
 		pEnhancedInput->BindAction(pCameraLockInput, ETriggerEvent::Started, this, &APlayerPawn::UpdateCameraLock);
+		pEnhancedInput->BindAction(pWeakAttackInput, ETriggerEvent::Started, this, &APlayerPawn::WeakAttack);
 
 		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
@@ -255,6 +256,40 @@ void APlayerPawn::SetHealInput(const FInputActionValue& val) {
 	const bool input = val.Get<bool>();
 
 	bHeal = input;
+}
+
+// 弱攻撃を行う関数
+void APlayerPawn::WeakAttack() {
+	//FTransform _SpawnTransform;
+	//_SpawnTransform.SetLocation(_Location);
+	//_SpawnTransform.SetRotation(_Rotation.Quaternion());
+
+	//auto const _Actor = World->SpawnActorDeferred<ATestActor>(_Class, _SpawnTransform);
+
+	//_Actor->TestParam = 10;		// BeginPlay前に実行したい処理
+
+	//// パラメータ設定は以下のように名前で指定も可、型名ごとにメソッドが用意されている
+	//// UKismetSystemLibrary::SetIntPropertyByName(_Actor, FName(TEXT("TestParam")), 10);
+
+	//_Actor->FinishSpawning(_SpawnTransform);	// スポーン処理
+
+	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 125.0f + pMesh->GetUpVector() * 60.0f;
+	FRotator Rotation = pMesh->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+
+	TObjectPtr<UWorld> World = GetWorld();
+	if (!World) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	TObjectPtr<ADamageCube> Atack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
+}
+
+// 強攻撃を行う関数
+void APlayerPawn::StrongAttack() {
+	// APの消費
+
+	// 攻撃アクタのスポーン
 }
 
 // カメラ位置を更新する関数

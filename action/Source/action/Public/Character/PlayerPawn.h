@@ -77,6 +77,8 @@ private:
 	TObjectPtr<UInputAction> pHealInput;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pCameraLockInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pWeakAttackInput;
 
 	UPROPERTY()
 	FRotator rLookInput;
@@ -112,6 +114,10 @@ private:
 	void SetHealInput(const FInputActionValue& val);
 	void SetBlinkInput();
 	void SetSprintInput();
+
+	void WeakAttack();
+
+	void StrongAttack();
 
 	void UpdateCameraAngle();
 

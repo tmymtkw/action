@@ -12,9 +12,11 @@ ADamageCube::ADamageCube() {
 	pBox->SetupAttachment(RootComponent);
 	pBox->SetCollisionProfileName("AttackCollision");
 
-	AddActorTag(FName("Enemy"));
+	//AddActorTag(FName("Enemy"));
 }
 
 void ADamageCube::BeginPlay() {
 	Super::BeginPlay();
+
+	SetLifeSpan(1.0f);
 }
