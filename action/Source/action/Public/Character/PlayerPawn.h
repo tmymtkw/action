@@ -18,6 +18,7 @@ class USpringArmComponent;
 class UPlayerPawnMovementComponent;
 class UInputMappingContext;
 class UInputAction;
+class UPlayerAnimInstance;
 /**
  * 
  */
@@ -44,6 +45,13 @@ public:
 	TObjectPtr<ABaseCharacterPawn> GetLockingEnemy();
 
 	bool GetIsCameraLock();
+
+	UFUNCTION(BlueprintCallable, Category = "CPPFunction|PlayerPawn")
+	bool GetIsPowerAttack();
+
+	void WeakAttack();
+
+	void PowerAttack();
 
 protected:
 	virtual void BeginPlay() override;
@@ -79,9 +87,14 @@ private:
 	TObjectPtr<UInputAction> pCameraLockInput;
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> pWeakAttackInput;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> pPowerAttackInput;
 
 	UPROPERTY()
 	FRotator rLookInput;
+
+	UPROPERTY()
+	TObjectPtr<UPlayerAnimInstance> animInstance;
 
 	//float HP;
 
@@ -97,6 +110,8 @@ private:
 	bool bHeal;
 
 	bool bCameraLock;
+
+	//bool bPowerAttack;
 
 	TObjectPtr<ABaseCharacterPawn> lockingEnemy;
 
@@ -114,10 +129,7 @@ private:
 	void SetHealInput(const FInputActionValue& val);
 	void SetBlinkInput();
 	void SetSprintInput();
-
-	void WeakAttack();
-
-	void StrongAttack();
+	void SetPowerAttackInput();
 
 	void UpdateCameraAngle();
 

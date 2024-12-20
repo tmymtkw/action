@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/PlayerPawnMovementComponent.h"
+#include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
 
 // コンストラクタ
@@ -43,6 +44,14 @@ APlayerPawn::APlayerPawn() {
 	pMesh->SetSkeletalMesh(mesh);
 	pMesh->SetupAttachment(pBody);
 	pMesh->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FQuat(FRotator(0.0f, -90.0f, 0.0f)));
+
+	// アニメーションを設定
+	TSubclassOf<UPlayerAnimInstance> anim = TSoftClassPtr<UPlayerAnimInstance>(
+		FSoftObjectPath(
+			TEXT("/Script/Engine.AnimBlueprint'/Game/Characters/Mannequins/Animations/ABP_Player.ABP_Player_C'")
+		)
+	).LoadSynchronous();
+	pMesh->SetAnimClass(anim);
 
 	// カメラ関連
 	// カメラの移動範囲
@@ -78,6 +87,7 @@ APlayerPawn::APlayerPawn() {
 	pHealInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_Heal.IA_Heal'"));
 	pCameraLockInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_CameraLock.IA_CameraLock'"));
 	pWeakAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_WeakAttack.IA_WeakAttack'"));
+	pPowerAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_PowerAttack.IA_PowerAttack'"));
 
 	// 変数の初期化
 	bBlink = false;
@@ -107,6 +117,8 @@ void APlayerPawn::BeginPlay() {
 
 	// カメラの移動入力を初期化
 	rLookInput = FRotator::ZeroRotator;
+
+	animInstance = Cast<UPlayerAnimInstance>(pMesh->GetAnimInstance());
 }
 
 // フレームごとの処理
@@ -164,6 +176,7 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		pEnhancedInput->BindAction(pHealInput, ETriggerEvent::Completed, this, &APlayerPawn::SetHealInput);
 		pEnhancedInput->BindAction(pCameraLockInput, ETriggerEvent::Started, this, &APlayerPawn::UpdateCameraLock);
 		pEnhancedInput->BindAction(pWeakAttackInput, ETriggerEvent::Started, this, &APlayerPawn::WeakAttack);
+		pEnhancedInput->BindAction(pPowerAttackInput, ETriggerEvent::Started, this, &APlayerPawn::SetPowerAttackInput);
 
 		UKismetSystemLibrary::PrintString(this, TEXT("Success"), true, false, FColor::Red, 5.0f, TEXT("None"));
 	}
@@ -285,11 +298,34 @@ void APlayerPawn::WeakAttack() {
 	TObjectPtr<ADamageCube> Atack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
 }
 
+void APlayerPawn::SetPowerAttackInput() {
+	if (!animInstance) {
+		UKismetSystemLibrary::PrintString(this, TEXT("anim instance is nullptr"), true, false, FColor::White, 3.0f, TEXT("None"));
+		return;
+	}
+	//if (animInstance->GetPowerAttack()) return;
+
+	//bPowerAttack = true;
+	animInstance->ActivatePowerAttack();
+	UKismetSystemLibrary::PrintString(this, TEXT("Power Attack"), true, false, FColor::White, 3.0f, TEXT("None"));
+
+}
+
 // 強攻撃を行う関数
-void APlayerPawn::StrongAttack() {
+void APlayerPawn::PowerAttack() {
 	// APの消費
 
 	// 攻撃アクタのスポーン
+	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 125.0f + pMesh->GetUpVector() * 60.0f;
+	FRotator Rotation = pMesh->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+
+	TObjectPtr<UWorld> World = GetWorld();
+	if (!World) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	TObjectPtr<ADamageCube> Attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
 }
 
 // カメラ位置を更新する関数
@@ -409,3 +445,5 @@ TObjectPtr<ABaseCharacterPawn> APlayerPawn::GetLockingEnemy() {
 }
 
 bool APlayerPawn::GetIsCameraLock() { return bCameraLock; }
+
+bool APlayerPawn::GetIsPowerAttack() { return true; }
