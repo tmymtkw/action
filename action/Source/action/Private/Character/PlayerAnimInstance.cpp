@@ -25,6 +25,10 @@ bool UPlayerAnimInstance::GetPowerAttack() {
 	return bPowerAttack;
 }
 
+void UPlayerAnimInstance::SetMove(const FVector& vInput) {
+	moveSpeed = vInput;
+}
+
 void UPlayerAnimInstance::PlayAttack() {
 	if (!playerPawn) return;
 

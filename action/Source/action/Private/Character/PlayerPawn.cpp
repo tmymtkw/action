@@ -130,6 +130,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 
 	// 速度の更新
 	pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
+	animInstance->SetMove(pPawnMove->GetInput());
 
 	// ブリンク時間の更新
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
@@ -295,7 +296,7 @@ void APlayerPawn::WeakAttack() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> Atack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
+	TObjectPtr<ADamageCube> Attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
 }
 
 void APlayerPawn::SetPowerAttackInput() {
@@ -325,7 +326,8 @@ void APlayerPawn::PowerAttack() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> Attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
+	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
+	attack->AddActorTag(FName("Player"));
 }
 
 // カメラ位置を更新する関数

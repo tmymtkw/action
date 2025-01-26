@@ -190,3 +190,7 @@ FVector UPlayerPawnMovementComponent::GetVelocity(const float& DeltaTime, bool& 
 FString UPlayerPawnMovementComponent::GetInputValue() {
 	return vInput.ToString();
 }
+
+FVector UPlayerPawnMovementComponent::GetInput() {
+	return vInput;
+}

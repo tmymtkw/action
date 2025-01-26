@@ -26,10 +26,13 @@ public:
 	//UFUNCTION(BlueprintCallable)
 	bool GetPowerAttack();
 
+	void SetMove(const FVector& vInput);
+
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<APlayerPawn> playerPawn;
 
+	UPROPERTY(BlueprintReadOnly)
 	FVector moveSpeed;
 
 	UPROPERTY(BlueprintReadOnly)

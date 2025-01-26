@@ -34,6 +34,8 @@ public:
 
 	FString GetInputValue();
 
+	FVector GetInput();
+
 protected:
 	
 private:
