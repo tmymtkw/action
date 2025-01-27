@@ -14,6 +14,9 @@ void AInGameHUD::BeginPlay() {
 
 	AddWidgetToViewport(statusWidgetPath, 0, playerController);
 	AddWidgetToViewport(debugWidgetPath, 1, playerController);
+
+	playerController->SetInputMode(FInputModeGameOnly());
+	playerController->SetShowMouseCursor(false);
 }
 
 void AInGameHUD::AddWidgetToViewport(FString path, int32 index, APlayerController* controller) {
