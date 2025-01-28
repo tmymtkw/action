@@ -13,6 +13,7 @@
 #include "Character/PlayerPawnMovementComponent.h"
 #include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
+//#include "UI/CursorWidget.h"
 
 // コンストラクタ
 APlayerPawn::APlayerPawn() {
@@ -75,6 +76,11 @@ APlayerPawn::APlayerPawn() {
 	pPawnMove = CreateDefaultSubobject<UPlayerPawnMovementComponent>(TEXT("PawnMove"));
 	pPawnMove->SetUpdatedComponent(RootComponent);
 	pPawnMove->SetRotatedComponent(pMesh);
+
+	//// ロックオンカーソル
+	//FString widgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Player/BPW_LockonCursor.BPW_LockonCursor_C'");
+	//TSubclassOf<UCursorWidget> widgetClass = TSoftClassPtr<UCursorWidget>(FSoftObjectPath(*widgetPath)).LoadSynchronous();
+	//cursorWidget = CreateDefaultSubobject<UCursorWidget>(TEXT("lockonCursor"));
 
 	// 入力の登録
 	// Mapping Context
@@ -438,6 +444,10 @@ float APlayerPawn::GetSPVal() { return SP; }
 
 //// ゲージの最大値を取得する関数
 //float APlayerPawn::GetMaxPower() { return params.MaxPower; }
+
+FRotator APlayerPawn::GetPlayerRotation() {
+	return pMesh->GetComponentRotation();
+}
 
 // ロック中の敵ポインタを取得する関数
 TObjectPtr<ABaseCharacterPawn> APlayerPawn::GetLockingEnemy() {

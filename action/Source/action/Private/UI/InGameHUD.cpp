@@ -10,10 +10,12 @@
 void AInGameHUD::BeginPlay() {
 	FString statusWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Player/BPW_Status.BPW_Status_C'");
 	FString debugWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Debug/BPW_PlayerStatusDebug.BPW_PlayerStatusDebug_C'");
+	//FString cursorWidgetPath = TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Player/BPW_LockonCursor.BPW_LockonCursor_C'");
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 	AddWidgetToViewport(statusWidgetPath, 0, playerController);
 	AddWidgetToViewport(debugWidgetPath, 1, playerController);
+	//AddWidgetToViewport(cursorWidgetPath, 2, playerController);
 
 	playerController->SetInputMode(FInputModeGameOnly());
 	playerController->SetShowMouseCursor(false);

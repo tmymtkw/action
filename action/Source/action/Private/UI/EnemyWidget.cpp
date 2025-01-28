@@ -26,7 +26,16 @@ bool UEnemyWidget::Initialize() {
 void UEnemyWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 	Super::Tick(MyGeometry, InDeltaTime);
 
-	enemyHPBar->SetVisibility(GetEnemyVisibility());
+	ESlateVisibility bEnemyVisible = GetEnemyVisibility();
+
+	if (bEnemyVisible != enemyHPBar->GetVisibility()) {
+		enemyHPBar->SetVisibility(bEnemyVisible);
+		lockonCursor->SetVisibility(bEnemyVisible);
+	}
+
+	if (bEnemyVisible != ESlateVisibility::Visible) return;
+
+	UpdateLockonCursor();
 }
 
 float UEnemyWidget::GetEnemyHPPercent() {
@@ -48,10 +57,28 @@ float UEnemyWidget::GetEnemyHPPercent() {
 
 }
 
+void UEnemyWidget::UpdateLockonCursor() {
+	if (!playerController) {
+		GetPlayerController();
+		return;
+	}
+
+	if (!pEnemy) return;
+
+	FVector2D screenLocation;
+
+	playerController->ProjectWorldLocationToScreen(pEnemy->GetActorLocation(), screenLocation, true);
+	lockonCursor->SetRenderTranslation(screenLocation);
+}
+
 void UEnemyWidget::GetEnemyPawn() {
 	if (!pPlayer) return;
 
 	pEnemy = pPlayer->GetLockingEnemy();
+}
+
+void UEnemyWidget::GetPlayerController() {
+	playerController = UGameplayStatics::GetPlayerController(this, 0);
 }
 
 ESlateVisibility UEnemyWidget::GetEnemyVisibility() {

@@ -30,6 +30,9 @@ private:
 	TObjectPtr<UTextBlock> locationInformation;
 
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> rotationInformation;
+
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> hpInformation;
 
 	UPROPERTY(meta = (BindWidget))
@@ -40,6 +43,9 @@ private:
 
 	UFUNCTION()
 	FText GetLocationInformation();
+
+	UFUNCTION()
+	FText GetRotationInformation();
 
 	UFUNCTION()
 	FText GetHPInformation();

@@ -19,6 +19,7 @@ class UPlayerPawnMovementComponent;
 class UInputMappingContext;
 class UInputAction;
 class UPlayerAnimInstance;
+class UCursorWidget;
 /**
  * 
  */
@@ -40,7 +41,7 @@ public:
 
 	float GetSPVal();
 
-	//float GetMaxPower();
+	FRotator GetPlayerRotation();
 
 	TObjectPtr<ABaseCharacterPawn> GetLockingEnemy();
 
@@ -52,6 +53,8 @@ public:
 	void WeakAttack();
 
 	void PowerAttack();
+
+	TObjectPtr<UCursorWidget> cursorWidget;
 
 protected:
 	virtual void BeginPlay() override;

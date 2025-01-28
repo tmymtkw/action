@@ -17,6 +17,7 @@ bool UDebugWidget::Initialize() {
 
 	if (bSuccess) {
 		locationInformation->TextDelegate.BindUFunction(this, "GetLocationInformation");
+		rotationInformation->TextDelegate.BindUFunction(this, "GetRotationInformation");
 		hpInformation->TextDelegate.BindUFunction(this, "GetHPInformation");
 		apInformation->TextDelegate.BindUFunction(this, "GetAPInformation");
 		spInformation->TextDelegate.BindUFunction(this, "GetSPInformation");
@@ -32,6 +33,12 @@ FText UDebugWidget::GetLocationInformation() {
 	}
 
 	return FText::FromString(pPlayer->GetActorLocation().ToString());
+}
+
+FText UDebugWidget::GetRotationInformation() {
+	if (!pPlayer) return FText::FromString("-.- -.- -.-");
+
+	return FText::FromString(pPlayer->GetPlayerRotation().ToString());
 }
 
 FText UDebugWidget::GetHPInformation() {

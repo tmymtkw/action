@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UI/PlayerStatusWidget.h"
 #include "Components/ProgressBar.h"
+#include "Components/Image.h"
 #include "EnemyWidget.generated.h"
 
 /**
@@ -24,14 +25,22 @@ protected:
 
 private:
 	UPROPERTY()
+	TObjectPtr<APlayerController> playerController;
+	UPROPERTY()
 	TObjectPtr<ABaseCharacterPawn> pEnemy;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> enemyHPBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> lockonCursor;
 
 	UFUNCTION()
 	float GetEnemyHPPercent();
 
+	void UpdateLockonCursor();
+
 	void GetEnemyPawn();
+
+	void GetPlayerController();
 
 	ESlateVisibility GetEnemyVisibility();
 };
