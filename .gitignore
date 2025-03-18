@@ -77,6 +77,5 @@ Intermediate
 
 Saved
 
-Content/*
-!Content/**/*.uasset
+Content/Characters/Mannequins
 !/Content/**/*.umap

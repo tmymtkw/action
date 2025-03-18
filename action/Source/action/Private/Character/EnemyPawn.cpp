@@ -37,7 +37,7 @@ void AEnemyPawn::Tick(float DeltaTime) {
 }
 
 void AEnemyPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	if (OtherActor->ActorHasTag(FName("Player"))) return;
+	if (!OtherActor->ActorHasTag(FName("Player"))) return;
 
 	fHP = FMathf::Max(0.0f, fHP - 10.0f);
 

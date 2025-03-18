@@ -42,6 +42,8 @@ public:
 
 	float GetMaxPowerVal();
 
+	virtual void RecoverFromAttack(float val);
+
 private:
 	bool bPlayer;
 

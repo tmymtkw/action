@@ -14,7 +14,7 @@ public:
 
 	// ‰ñ•œ‘¬“x
 	float HealHPValue = 70.0f;
-	float HealSPValue = 50.0f;
+	float HealSPValue = 20.0f;
 	float HealHPRatio = 0.5f;
 
 	// ƒuƒŠƒ“ƒNŽžŠÔ

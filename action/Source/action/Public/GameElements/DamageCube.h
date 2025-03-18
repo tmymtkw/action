@@ -18,11 +18,16 @@ class ACTION_API ADamageCube : public ADefaultAtackActor
 public:
 	ADamageCube();
 
+	float speed;
+
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float deltaTime) override;
 
 private:
 	UPROPERTY()
 	TObjectPtr<UBoxComponent> pBox;
 
+	TObjectPtr<UStaticMeshComponent> pMesh;
 };

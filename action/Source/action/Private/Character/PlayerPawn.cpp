@@ -199,8 +199,10 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 
 	if (0.2f < fBlinkTime) return;
 
+	TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
+
 	// HPが減少, APに変換
-	fHP = FMathf::Max(fHP - 10.0f, 0.0f);
+	fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
 	AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
 	UKismetSystemLibrary::PrintString(this, TEXT("Damage"), true, false, FColor::Red, 5.0f, TEXT("None"));
 }
@@ -254,7 +256,7 @@ void APlayerPawn::SetBlinkInput() {
 	}
 	// SPが0になる(APを消費する)場合
 	else {
-		SP = -10.0f;
+		SP = 0.0f;
 		//AP = FMathf::Max(AP - (params.BlinkPower - SP), 0.0f);
 	}
 
@@ -334,6 +336,15 @@ void APlayerPawn::PowerAttack() {
 
 	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
 	attack->AddActorTag(FName("Player"));
+	attack->speed = 150.0f;
+	attack->SetDamageValue(AP);
+	AP = 0.0f;
+}
+
+void APlayerPawn::RecoverFromAttack(float val) {
+	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fMaxPower - fHP) + TEXT(" : ") + FString::SanitizeFloat(SP + val), true, false, FColor::Blue, 3.0f, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, TEXT("recover"), true, false, FColor::Blue, 3.0f, TEXT("None"));
+	SP = FMathf::Min(fMaxPower - fHP, SP + val);
 }
 
 // カメラ位置を更新する関数

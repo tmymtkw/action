@@ -54,6 +54,8 @@ public:
 
 	void PowerAttack();
 
+	void RecoverFromAttack(float val) override;
+
 	TObjectPtr<UCursorWidget> cursorWidget;
 
 protected:
