@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameElements/DefaultAtackActor.h"
-#include "Components/BoxComponent.h"
 #include "DamageCube.generated.h"
+
+class UBoxComponent;
 
 /**
  * 

@@ -30,7 +30,7 @@ public:
 
 	void UpdatePawnMovement(const float& DeltaTime, bool isBlink, bool isCameraLock, const FRotator& cameraAngle);
 
-	void UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock);
+	void UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock, const FRotator& cameraAngle);
 
 	FString GetInputValue();
 

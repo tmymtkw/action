@@ -2,6 +2,7 @@
 
 
 #include "GameElements/DamageCube.h"
+#include "Components/BoxComponent.h"
 
 ADamageCube::ADamageCube() {
 	PrimaryActorTick.bCanEverTick = true;

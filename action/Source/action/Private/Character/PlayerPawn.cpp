@@ -100,6 +100,7 @@ APlayerPawn::APlayerPawn() {
 	bSprint = false;
 	bHeal = false;
 	bCameraLock = false;
+	bAttack = false;
 	fBlinkTime = 0.0f;
 	fHP = params.HP - 30.0f;
 	fMaxPower = params.MaxPower;
@@ -142,7 +143,7 @@ void APlayerPawn::Tick(float DeltaTime) {
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
 
 	// SP‚Ì‰ñ•œ
-	if (fBlinkTime <= 0.0f) {
+	if (fBlinkTime <= 0.0f && !animInstance->GetPowerAttack()) {
 		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, fMaxPower - fHP);
 	}
 
@@ -314,7 +315,6 @@ void APlayerPawn::SetPowerAttackInput() {
 	}
 	//if (animInstance->GetPowerAttack()) return;
 
-	//bPowerAttack = true;
 	animInstance->ActivatePowerAttack();
 	UKismetSystemLibrary::PrintString(this, TEXT("Power Attack"), true, false, FColor::White, 3.0f, TEXT("None"));
 

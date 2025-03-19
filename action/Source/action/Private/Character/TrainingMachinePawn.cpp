@@ -30,8 +30,9 @@ void ATrainingMachinePawn::BeginPlay() {
 
 	fMaxPower = 100.0f;
 	fHP = fMaxPower;
-	fInterval = 3.0f;
+	fInterval = 0.7f;
 	fTime = 0.0f;
+	fCnt = 0;
 }
 
 void ATrainingMachinePawn::Tick(float deltaTime) {
@@ -47,7 +48,14 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 		return;
 	}
 
-	fTime = 0.0f;
+	if (fCnt < 2) {
+		fCnt++;
+		fTime = 0.0f;
+	}
+	else {
+		fCnt = 0;
+		fTime = -2.0f;
+	}
 	UKismetSystemLibrary::PrintString(this, TEXT("Attack Interval"), true, false, FColor::Red, 5.0f, TEXT("None"));
 
 	// 攻撃アクタのスポーン

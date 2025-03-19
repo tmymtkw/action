@@ -116,6 +116,8 @@ private:
 
 	bool bCameraLock;
 
+	bool bAttack;
+
 	//bool bPowerAttack;
 
 	TObjectPtr<ABaseCharacterPawn> lockingEnemy;
