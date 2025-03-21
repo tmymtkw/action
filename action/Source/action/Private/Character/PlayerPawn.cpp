@@ -10,6 +10,8 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
 #include "Character/PlayerPawnMovementComponent.h"
 #include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
@@ -35,7 +37,8 @@ APlayerPawn::APlayerPawn() {
 	pAvoid->SetHiddenInGame(false);
 	pAvoid->SetSimulatePhysics(false);
 	pAvoid->SetCollisionProfileName("AvoidCollision");
-	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBeginInBlinking);
+	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapBegin);
+	pAvoid->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapEnd);
 	pAvoid->SetupAttachment(pBody);
 
 	// メッシュ
@@ -96,6 +99,7 @@ APlayerPawn::APlayerPawn() {
 	pPowerAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_PowerAttack.IA_PowerAttack'"));
 
 	// 変数の初期化
+	bAvoidOverlap = false;
 	bBlink = false;
 	bSprint = false;
 	bHeal = false;
@@ -152,6 +156,11 @@ void APlayerPawn::Tick(float DeltaTime) {
 		HealHP(DeltaTime);
 	}
 
+	// APの獲得
+	if (bAvoidOverlap && 0.2 < fBlinkTime) {
+		AP = FMathf::Min(AP + 20.0f * DeltaTime, params.MaxPower - fHP);
+	}
+
 	// デバッグ
 	//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fHP) + TEXT(" ") + FString::SanitizeFloat(AP) + TEXT(" ") + FString::SanitizeFloat(SP), true, false, FColor::White, DeltaTime, TEXT("None"));
 	//UKismetSystemLibrary::PrintString(this, this->GetActorLocation().ToString(), true, false, FColor::White, DeltaTime, TEXT("None"));
@@ -198,26 +207,41 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
 
-	if (0.2f < fBlinkTime) return;
+	// 回避できている場合
+	if (0.2f < fBlinkTime) {
+		AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
+		UKismetSystemLibrary::PrintString(this, TEXT("Player Get SP"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 
-	TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
+	}
+	// ダメージを受ける場合
+	else {
+		TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
 
-	// HPが減少, APに変換
-	fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
-	AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
-	UKismetSystemLibrary::PrintString(this, TEXT("Damage"), true, false, FColor::Red, 5.0f, TEXT("None"));
+		// HPが減少, APに変換
+		fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
+		AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
+		UKismetSystemLibrary::PrintString(this, TEXT("Player Damaged"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+	}
+
 }
 
 // ブリンク中攻撃に接触したときに呼ばれる関数
-void APlayerPawn::OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+void APlayerPawn::OnAvoidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
 
-	if (fBlinkTime < 0.2f) return;
+	// フラグを立てる
+	bAvoidOverlap = true;
 
 	// APを獲得
-	AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
-	UKismetSystemLibrary::PrintString(this, TEXT("Get SP"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	//AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
+	//UKismetSystemLibrary::PrintString(this, TEXT("Player Get SP"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+}
+
+void APlayerPawn::OnAvoidOverlapEnd(UPrimitiveComponent* OverlappedComp,
+																	 AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+	bAvoidOverlap = false;
+	UKismetSystemLibrary::PrintString(this, TEXT("Avoid overlap end"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 }
 
 

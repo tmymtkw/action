@@ -30,7 +30,7 @@ void ATrainingMachinePawn::BeginPlay() {
 
 	fMaxPower = 100.0f;
 	fHP = fMaxPower;
-	fInterval = 0.7f;
+	fInterval = 1.5f;
 	fTime = 0.0f;
 	fCnt = 0;
 }
@@ -77,9 +77,8 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 }
 
 void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	UKismetSystemLibrary::PrintString(this, TEXT("overlap occured"), true, false, FColor::Red, 5.0f, TEXT("None"));
-
 	if (!OtherActor->ActorHasTag(FName("Player"))) return;
+	UKismetSystemLibrary::PrintString(this, TEXT("overlap occured"), true, false, FColor::Red, 5.0f, TEXT("None"));
 
 	TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
 	fHP = FMathf::Max(0.0f, fHP - actor->GetDamageValue());

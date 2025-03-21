@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Character/BaseCharacterPawn.h"
-#include "InputMappingContext.h"
-#include "InputAction.h"
+//#include "InputMappingContext.h"
+//#include "InputAction.h"
 #include "InputActionValue.h"
 #include "PlayerStatus.h"
 #include "PlayerPawn.generated.h"
@@ -107,6 +107,8 @@ private:
 
 	float SP;
 
+	bool bAvoidOverlap;
+
 	bool bBlink;
 	float fBlinkTime;
 
@@ -128,8 +130,9 @@ private:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	void OnAvoidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnAvoidOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void SetMoveInput(const FInputActionValue& val);
 	void SetLookInput(const FInputActionValue& val);
