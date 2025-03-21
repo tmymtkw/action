@@ -41,7 +41,7 @@ void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bo
 
 	// 移動方向に応じたメッシュの回転
 	// ロックオンしている場合 TODO
-	UpdateComponentRotation(DeltaTime, isBlink, isCameraLock);
+	UpdateComponentRotation(DeltaTime, isBlink, isCameraLock, cameraAngle);
 
 	// 障害物との衝突を考慮した移動
 	if (!Velocity.IsNearlyZero()) {
@@ -60,8 +60,12 @@ void UPlayerPawnMovementComponent::UpdatePawnMovement(const float& DeltaTime, bo
 }
 
 // コンポーネントを移動方向に回転させる関数
-void UPlayerPawnMovementComponent::UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock) {
+void UPlayerPawnMovementComponent::UpdateComponentRotation(const float& DeltaTime, bool isBlink, bool isCameraLock, const FRotator& cameraAngle) {
 	// TODO: 回転させない例外処理
+	if (isCameraLock) {
+		rotatedComponent->SetWorldRotation(FRotator(0.0f, cameraAngle.Yaw - 90.0f, 0.0f));
+		return;
+	}
 
 	// 角度の差
 	FRotator rotationDifference = vRotatedInput.Rotation() - rotatedComponent->GetRightVector().Rotation();

@@ -10,6 +10,8 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
 #include "Character/PlayerPawnMovementComponent.h"
 #include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
@@ -35,7 +37,8 @@ APlayerPawn::APlayerPawn() {
 	pAvoid->SetHiddenInGame(false);
 	pAvoid->SetSimulatePhysics(false);
 	pAvoid->SetCollisionProfileName("AvoidCollision");
-	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBeginInBlinking);
+	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapBegin);
+	pAvoid->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapEnd);
 	pAvoid->SetupAttachment(pBody);
 
 	// メッシュ
@@ -96,10 +99,12 @@ APlayerPawn::APlayerPawn() {
 	pPowerAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_PowerAttack.IA_PowerAttack'"));
 
 	// 変数の初期化
+	bAvoidOverlap = false;
 	bBlink = false;
 	bSprint = false;
 	bHeal = false;
 	bCameraLock = false;
+	bAttack = false;
 	fBlinkTime = 0.0f;
 	fHP = params.HP - 30.0f;
 	fMaxPower = params.MaxPower;
@@ -142,13 +147,18 @@ void APlayerPawn::Tick(float DeltaTime) {
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
 
 	// SPの回復
-	if (fBlinkTime <= 0.0f) {
+	if (fBlinkTime <= 0.0f && !animInstance->GetPowerAttack()) {
 		SP = FMathf::Min(SP + params.HealSPValue * DeltaTime, fMaxPower - fHP);
 	}
 
 	// HPの回復(入力がある時のみ)
 	if (bHeal) {
 		HealHP(DeltaTime);
+	}
+
+	// APの獲得
+	if (bAvoidOverlap && 0.2 < fBlinkTime) {
+		AP = FMathf::Min(AP + 20.0f * DeltaTime, params.MaxPower - fHP);
 	}
 
 	// デバッグ
@@ -197,24 +207,41 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
 
-	if (0.2f < fBlinkTime) return;
+	// 回避できている場合
+	if (0.2f < fBlinkTime) {
+		AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
+		UKismetSystemLibrary::PrintString(this, TEXT("Player Get SP"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 
-	// HPが減少, APに変換
-	fHP = FMathf::Max(fHP - 10.0f, 0.0f);
-	AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
-	UKismetSystemLibrary::PrintString(this, TEXT("Damage"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	}
+	// ダメージを受ける場合
+	else {
+		TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
+
+		// HPが減少, APに変換
+		fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
+		AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
+		UKismetSystemLibrary::PrintString(this, TEXT("Player Damaged"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+	}
+
 }
 
 // ブリンク中攻撃に接触したときに呼ばれる関数
-void APlayerPawn::OnOverlapBeginInBlinking(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+void APlayerPawn::OnAvoidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
 
-	if (fBlinkTime < 0.2f) return;
+	// フラグを立てる
+	bAvoidOverlap = true;
 
 	// APを獲得
-	AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
-	UKismetSystemLibrary::PrintString(this, TEXT("Get SP"), true, false, FColor::Red, 5.0f, TEXT("None"));
+	//AP = FMathf::Min(AP + 10.0f, params.MaxPower - fHP);
+	//UKismetSystemLibrary::PrintString(this, TEXT("Player Get SP"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+}
+
+void APlayerPawn::OnAvoidOverlapEnd(UPrimitiveComponent* OverlappedComp,
+																	 AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+	bAvoidOverlap = false;
+	UKismetSystemLibrary::PrintString(this, TEXT("Avoid overlap end"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 }
 
 
@@ -254,7 +281,7 @@ void APlayerPawn::SetBlinkInput() {
 	}
 	// SPが0になる(APを消費する)場合
 	else {
-		SP = -10.0f;
+		SP = 0.0f;
 		//AP = FMathf::Max(AP - (params.BlinkPower - SP), 0.0f);
 	}
 
@@ -312,7 +339,6 @@ void APlayerPawn::SetPowerAttackInput() {
 	}
 	//if (animInstance->GetPowerAttack()) return;
 
-	//bPowerAttack = true;
 	animInstance->ActivatePowerAttack();
 	UKismetSystemLibrary::PrintString(this, TEXT("Power Attack"), true, false, FColor::White, 3.0f, TEXT("None"));
 
@@ -334,6 +360,15 @@ void APlayerPawn::PowerAttack() {
 
 	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
 	attack->AddActorTag(FName("Player"));
+	attack->speed = 150.0f;
+	attack->SetDamageValue(AP);
+	AP = 0.0f;
+}
+
+void APlayerPawn::RecoverFromAttack(float val) {
+	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fMaxPower - fHP) + TEXT(" : ") + FString::SanitizeFloat(SP + val), true, false, FColor::Blue, 3.0f, TEXT("None"));
+	UKismetSystemLibrary::PrintString(this, TEXT("recover"), true, false, FColor::Blue, 3.0f, TEXT("None"));
+	SP = FMathf::Min(fMaxPower - fHP, SP + val);
 }
 
 // カメラ位置を更新する関数
