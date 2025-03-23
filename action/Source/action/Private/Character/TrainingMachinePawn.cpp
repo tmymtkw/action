@@ -10,7 +10,7 @@ ATrainingMachinePawn::ATrainingMachinePawn() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	pBody = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
-	pBody->SetCapsuleSize(50.0f, 120.0f);
+	pBody->SetCapsuleSize(50.0f, 50.0f);
 	pBody->SetHiddenInGame(false);
 	pBody->SetSimulatePhysics(false);
 	pBody->SetCollisionProfileName("CharacterCollision");
@@ -22,13 +22,12 @@ ATrainingMachinePawn::ATrainingMachinePawn() {
 	pStaticBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	pStaticBody->SetStaticMesh(m);
 	pStaticBody->SetupAttachment(pBody);
-
 }
 
 void ATrainingMachinePawn::BeginPlay() {
 	Super::BeginPlay();
 
-	fMaxPower = 300.0f;
+	fMaxPower = 150.0f;
 	fHP = fMaxPower;
 	fInterval = 1.5f;
 	fTime = 0.0f;
