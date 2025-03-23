@@ -20,6 +20,7 @@ class UInputMappingContext;
 class UInputAction;
 class UPlayerAnimInstance;
 class UCursorWidget;
+class UNiagaraSystem;
 /**
  * 
  */
@@ -125,6 +126,9 @@ private:
 	TObjectPtr<ABaseCharacterPawn> lockingEnemy;
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjects;
+
+	//TObjectPtr<UNiagaraComponent> attackEffect;
+	TObjectPtr<UNiagaraSystem> niagaraAttackSystem;
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

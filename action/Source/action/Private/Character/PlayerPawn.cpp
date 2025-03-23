@@ -15,6 +15,8 @@
 #include "Character/PlayerPawnMovementComponent.h"
 #include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 //#include "UI/CursorWidget.h"
 
 // コンストラクタ
@@ -98,6 +100,12 @@ APlayerPawn::APlayerPawn() {
 	pWeakAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_WeakAttack.IA_WeakAttack'"));
 	pPowerAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_PowerAttack.IA_PowerAttack'"));
 
+	// Niagara
+	niagaraAttackSystem = LoadObject<UNiagaraSystem>(NULL, TEXT("/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_attack.NS_attack'"));
+	//attackEffect = NewObject<UNiagaraComponent>(GetTransientPackage());
+	//attackEffect->SetAsset(attackSystem);
+	//attackEffect->SetupAttachment(pBody);
+
 	// 変数の初期化
 	bAvoidOverlap = false;
 	bBlink = false;
@@ -140,8 +148,10 @@ void APlayerPawn::Tick(float DeltaTime) {
 	this->UpdateCameraAngle();
 
 	// 速度の更新
-	pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
-	animInstance->SetMove(pPawnMove->GetInput());
+	if (!animInstance->GetPowerAttack()) {
+		pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
+		animInstance->SetMove(pPawnMove->GetInput());
+	}
 
 	// ブリンク時間の更新
 	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
@@ -349,8 +359,11 @@ void APlayerPawn::PowerAttack() {
 	// APの消費
 
 	// 攻撃アクタのスポーン
-	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 125.0f + pMesh->GetUpVector() * 60.0f;
+	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 50.0f + pMesh->GetUpVector() * 90.0f;
 	FRotator Rotation = pMesh->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+	FTransform spawnTransform;
+	spawnTransform.SetLocation(Location);
+	spawnTransform.SetRotation(Rotation.Quaternion());
 
 	TObjectPtr<UWorld> World = GetWorld();
 	if (!World) return;
@@ -358,11 +371,20 @@ void APlayerPawn::PowerAttack() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
-	attack->AddActorTag(FName("Player"));
-	attack->speed = 150.0f;
+	auto attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
+	attack->AddActorTag("Player");
+	attack->SetCollisionSpeed(500.0f);
+	attack->SetCollisionSize(FVector(50.0f, 200.0f, 200.0f));
 	attack->SetDamageValue(AP);
+	attack->FinishSpawning(spawnTransform);
+
 	AP = 0.0f;
+	if (!niagaraAttackSystem || !niagaraAttackSystem->IsValid()) {
+		UKismetSystemLibrary::PrintString(this, TEXT("niagara failed"), true, false, FColor::Blue, 3.0f, TEXT("None"));
+		return;
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, niagaraAttackSystem, Location, Rotation, FVector(1.0f), true, true, ENCPoolMethod::AutoRelease, true);
+
 }
 
 void APlayerPawn::RecoverFromAttack(float val) {

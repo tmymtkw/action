@@ -28,7 +28,7 @@ ATrainingMachinePawn::ATrainingMachinePawn() {
 void ATrainingMachinePawn::BeginPlay() {
 	Super::BeginPlay();
 
-	fMaxPower = 100.0f;
+	fMaxPower = 300.0f;
 	fHP = fMaxPower;
 	fInterval = 1.5f;
 	fTime = 0.0f;
@@ -61,6 +61,9 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 	// 攻撃アクタのスポーン
 	FVector Location = pBody->GetComponentLocation();
 	FRotator Rotation = pBody->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+	FTransform spawnTransform;
+	spawnTransform.SetLocation(Location);
+	spawnTransform.SetRotation(Rotation.Quaternion());
 
 	TObjectPtr<UWorld> World = GetWorld();
 	if (!World) return;
@@ -68,12 +71,13 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
+	TObjectPtr<ADamageCube> attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
 	attack->AddActorTag(FName("Enemy"));
 	// 速度
-	attack->speed = 500.0f;
+	attack->SetCollisionSpeed(500.0f);
 	attack->SetLifeSpan(3.0f);
 	attack->SetDamageValue(10.0f);
+	attack->FinishSpawning(spawnTransform);
 }
 
 void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
