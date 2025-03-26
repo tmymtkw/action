@@ -31,4 +31,6 @@ private:
 	TObjectPtr<UResultWidget> castedResultWidget;
 
 	void AddWidgetToViewport(FString path, int32 index, APlayerController* controller);
+
+	void Reveal();
 };

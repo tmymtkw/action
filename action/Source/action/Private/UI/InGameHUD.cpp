@@ -74,6 +74,16 @@ void AInGameHUD::DisplayGameOver() {
 void AInGameHUD::DisplayResult(bool isClear) {
 	castedResultWidget = Cast<UResultWidget>(resultWidget);
 	castedResultWidget->SetResult(isClear);
+	
+	FTimerManager& timerManager = GetWorldTimerManager();
+	FTimerHandle timerHandle;
+	timerManager.SetTimer(timerHandle, this, &AInGameHUD::Reveal, 0.4f, false, 0.4f);
+
+}
+
+void AInGameHUD::Reveal() {
+	if (!resultWidget) return;
+
 	resultWidget->SetVisibility(ESlateVisibility::Visible);
 
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);

@@ -100,6 +100,8 @@ void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 		}
 		//delete gamemode;
 
+		this->SetActorTickEnabled(false);
+
 		return;
 
 	}

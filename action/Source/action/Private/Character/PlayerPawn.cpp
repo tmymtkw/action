@@ -242,20 +242,6 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
 		UKismetSystemLibrary::PrintString(this, TEXT("Player Damaged"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 
-		// HP‚ª0‚É‚È‚Á‚½Žž
-		if (fHP <= 0) {
-			UKismetSystemLibrary::PrintString(this, TEXT("Calling GameOver Event"), true, false, FColor::Blue, 5.0f, TEXT("None"));
-
-			TObjectPtr<AGameModeBaseInGame> gamemode = Cast<AGameModeBaseInGame>(UGameplayStatics::GetGameMode(GetWorld()));
-			if (gamemode) {
-				UKismetSystemLibrary::PrintString(this, TEXT("Calling Gamemode function"), true, false, FColor::Blue, 5.0f, TEXT("None"));
-
-				gamemode->ActivateResult(false);
-			}
-			//delete gamemode;
-
-			return;
-		}
 
 		if (const TObjectPtr<APlayerController> playerController = Cast<APlayerController>(Controller)) {
 			if (!pDamageShake) return;
@@ -264,6 +250,20 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 			UKismetSystemLibrary::PrintString(this, TEXT("Camera Shaked"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 		}
 
+		// HP‚ª0‚É‚È‚Á‚½Žž
+		if (fHP <= 0) {
+			UKismetSystemLibrary::PrintString(this, TEXT("Calling GameOver Event"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+			TObjectPtr<AGameModeBaseInGame> gamemode = Cast<AGameModeBaseInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (gamemode) {
+				UKismetSystemLibrary::PrintString(this, TEXT("Calling Gamemode function"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+				animInstance->SetMove(FVector::Zero());
+				pBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				animInstance->ActivateDeath();
+				gamemode->ActivateResult(false);
+			}
+		}
 	}
 
 }

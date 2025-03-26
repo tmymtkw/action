@@ -32,4 +32,6 @@ public:
 
 private:
 	void Respawn();
+
+	void ResetGameSpeed();
 };

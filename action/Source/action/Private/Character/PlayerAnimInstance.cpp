@@ -6,6 +6,7 @@
 
 UPlayerAnimInstance::UPlayerAnimInstance() {
 	bPowerAttack = false;
+	bDeath = false;
 	moveSpeed = FVector::Zero();
 }
 
@@ -19,6 +20,10 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds) {
 	if (playerPawn) return;
 
 	GetPlayerPawn();
+}
+
+void UPlayerAnimInstance::ActivateDeath() {
+	bDeath = true;
 }
 
 bool UPlayerAnimInstance::GetPowerAttack() {

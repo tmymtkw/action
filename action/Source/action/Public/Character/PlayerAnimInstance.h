@@ -28,6 +28,8 @@ public:
 
 	void SetMove(const FVector& vInput);
 
+	void ActivateDeath();
+
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<APlayerPawn> playerPawn;
@@ -37,6 +39,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bPowerAttack;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bDeath;
 
 	void GetPlayerPawn();
 
