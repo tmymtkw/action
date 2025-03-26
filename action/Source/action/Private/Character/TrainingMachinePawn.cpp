@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameElements/DamageCube.h"
 #include "Gamemode/GameModeBaseInGame.h"
+#include "GameElements/EnemyAttackCube.h"
 
 ATrainingMachinePawn::ATrainingMachinePawn() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -71,13 +72,19 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
-	attack->AddActorTag(FName("Enemy"));
-	// ‘¬“x
-	attack->SetCollisionSpeed(500.0f);
-	attack->SetLifeSpan(3.0f);
-	attack->SetDamageValue(10.0f);
-	attack->FinishSpawning(spawnTransform);
+	TObjectPtr<AEnemyAttackCube> attackCube = World->SpawnActorDeferred<AEnemyAttackCube>(AEnemyAttackCube::StaticClass(), spawnTransform);
+	attackCube->AddActorTag(FName("Enemy"));
+	attackCube->SetLifeSpan(5.0f);
+	attackCube->SetDamageValue(10.0f);
+	attackCube->FinishSpawning(spawnTransform);
+
+	//TObjectPtr<ADamageCube> attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
+	//attack->AddActorTag(FName("Enemy"));
+	//// ‘¬“x
+	//attack->SetCollisionSpeed(500.0f);
+	//attack->SetLifeSpan(3.0f);
+	//attack->SetDamageValue(10.0f);
+	//attack->FinishSpawning(spawnTransform);
 }
 
 void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {

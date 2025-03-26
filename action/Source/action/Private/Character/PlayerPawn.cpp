@@ -29,7 +29,7 @@ APlayerPawn::APlayerPawn() {
 	// 当たり判定
 	pBody = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
 	pBody->SetCapsuleSize(30.0f, 90.0f);
-	pBody->SetHiddenInGame(false);
+	pBody->SetHiddenInGame(true);
 	pBody->SetSimulatePhysics(false);
 	pBody->SetCollisionProfileName("CharacterCollision");
 	pBody->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBegin);
@@ -40,7 +40,7 @@ APlayerPawn::APlayerPawn() {
 	// 回避用コリジョン
 	pAvoid = CreateDefaultSubobject<USphereComponent>(TEXT("AvoidCollision"));
 	pAvoid->SetSphereRadius(125.0f);
-	pAvoid->SetHiddenInGame(false);
+	pAvoid->SetHiddenInGame(true);
 	pAvoid->SetSimulatePhysics(false);
 	pAvoid->SetCollisionProfileName("AvoidCollision");
 	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapBegin);
@@ -235,7 +235,7 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 	// ダメージを受ける場合
 	else {
-		TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
+		TObjectPtr<ADefaultAtackActor> actor = Cast<ADefaultAtackActor>(OtherActor);
 
 		// HPが減少, APに変換
 		fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
