@@ -19,6 +19,7 @@
 #include "NiagaraSystem.h"
 #include "Camera/CameraShakeBase.h"
 #include "Character/PlayerCameraShake.h"
+#include "Gamemode/GameModeBaseInGame.h"
 //#include "UI/CursorWidget.h"
 
 // コンストラクタ
@@ -154,6 +155,8 @@ void APlayerPawn::Tick(float DeltaTime) {
 	// カメラ位置の更新
 	this->UpdateCameraAngle();
 
+	if (fHP <= 0.0f) return;
+
 	// 速度の更新
 	if (!animInstance->GetPowerAttack()) {
 		pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
@@ -238,6 +241,21 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
 		AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
 		UKismetSystemLibrary::PrintString(this, TEXT("Player Damaged"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+		// HPが0になった時
+		if (fHP <= 0) {
+			UKismetSystemLibrary::PrintString(this, TEXT("Calling GameOver Event"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+			TObjectPtr<AGameModeBaseInGame> gamemode = Cast<AGameModeBaseInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (gamemode) {
+				UKismetSystemLibrary::PrintString(this, TEXT("Calling Gamemode function"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+				gamemode->ActivateResult(false);
+			}
+			//delete gamemode;
+
+			return;
+		}
 
 		if (const TObjectPtr<APlayerController> playerController = Cast<APlayerController>(Controller)) {
 			if (!pDamageShake) return;

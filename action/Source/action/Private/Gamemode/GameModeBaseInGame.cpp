@@ -23,6 +23,22 @@ void AGameModeBaseInGame::BeginPlay() {
 	vSpawnTransform = PlayerStart->GetActorTransform();
 }
 
+void AGameModeBaseInGame::ActivateGameOver() {
+	const TObjectPtr<APlayerController> playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	TObjectPtr<AInGameHUD> hud = Cast<AInGameHUD>(playerController->GetHUD());
+	if (hud) {
+		hud->DisplayGameOver();
+	}
+}
+
+void AGameModeBaseInGame::ActivateResult(bool isClear) {
+	const TObjectPtr<APlayerController> playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	TObjectPtr<AInGameHUD> hud = Cast<AInGameHUD>(playerController->GetHUD());
+	if (hud) {
+		hud->DisplayResult(isClear);
+	}
+}
+
 void AGameModeBaseInGame::Respawn() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);

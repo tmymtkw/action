@@ -5,6 +5,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameElements/DamageCube.h"
+#include "Gamemode/GameModeBaseInGame.h"
 
 ATrainingMachinePawn::ATrainingMachinePawn() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -86,6 +87,22 @@ void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
 	fHP = FMathf::Max(0.0f, fHP - actor->GetDamageValue());
 	pPlayer->RecoverFromAttack(actor->GetDamageValue());
+
+	// game clear
+	if (fHP <= 0.0f) {
+		UKismetSystemLibrary::PrintString(this, TEXT("Calling GameClear Event"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+		TObjectPtr<AGameModeBaseInGame> gamemode = Cast<AGameModeBaseInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (gamemode) {
+			UKismetSystemLibrary::PrintString(this, TEXT("Calling Gameclear function"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+			gamemode->ActivateResult(true);
+		}
+		//delete gamemode;
+
+		return;
+
+	}
 
 	UKismetSystemLibrary::PrintString(this, TEXT("Enemy damaged"), true, false, FColor::Red, 5.0f, TEXT("None"));
 }
