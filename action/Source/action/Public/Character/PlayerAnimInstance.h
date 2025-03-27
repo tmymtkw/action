@@ -28,6 +28,12 @@ public:
 
 	void SetMove(const FVector& vInput);
 
+	void ActivateBlink(bool isLock);
+
+	void ActivateDeath();
+
+	void DeactivateBlink();
+
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<APlayerPawn> playerPawn;
@@ -38,11 +44,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bPowerAttack;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bDeath;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bBlink;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector blinkDir;
+
 	void GetPlayerPawn();
 
 	UFUNCTION(BlueprintCallable)
 	void PlayAttack();
-
 
 	UFUNCTION(BlueprintCallable)
 	void DeactivatePowerAttack();

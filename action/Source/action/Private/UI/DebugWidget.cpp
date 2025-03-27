@@ -44,19 +44,19 @@ FText UDebugWidget::GetRotationInformation() {
 FText UDebugWidget::GetHPInformation() {
 	if (!pPlayer) return FText::FromName(zero);
 
-	return FText::FromString(FString::SanitizeFloat(pPlayer->GetHPVal()));
+	return FText::FromString(FString::FromInt((int)pPlayer->GetHPVal()));
 }
 
 FText UDebugWidget::GetAPInformation() {
 	if (!pPlayer) return FText::FromName(zero);
 
-	return FText::FromString(FString::SanitizeFloat(pPlayer->GetAPVal()));
+	return FText::FromString(FString::FromInt((int)pPlayer->GetAPVal()));
 }
 
 FText UDebugWidget::GetSPInformation() {
 	if (!pPlayer) return FText::FromName(zero);
 
-	return FText::FromString(FString::SanitizeFloat(pPlayer->GetSPVal()));
+	return FText::FromString(FString::FromInt((int)pPlayer->GetSPVal()));
 }
 
 void UDebugWidget::GetPlayerPawn() {

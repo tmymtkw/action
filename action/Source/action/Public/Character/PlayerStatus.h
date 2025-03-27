@@ -14,14 +14,14 @@ public:
 
 	// 回復速度
 	float HealHPValue = 70.0f;
-	float HealSPValue = 20.0f;
+	float HealSPValue = 15.0f;
 	float HealHPRatio = 0.5f;
 
 	// ブリンク時間
 	const float BLINKTIME = 0.5f;
 
 	// ブリンク時消費量
-	float BlinkPower = 15.0f;
+	float BlinkPower = 30.0f;
 
 private:
 };

@@ -7,6 +7,7 @@
 #include "InGameHUD.generated.h"
 
 class UUserWidget;
+class UResultWidget;
 /**
  * 
  */
@@ -16,10 +17,20 @@ class ACTION_API AInGameHUD : public AHUD
 	GENERATED_BODY()
 	
 public:
+	void DisplayGameOver();
+
+	void DisplayResult(bool isClear);
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	TObjectPtr<UUserWidget> gameoverWidget;
+
+	TObjectPtr<UUserWidget> resultWidget;
+	TObjectPtr<UResultWidget> castedResultWidget;
+
 	void AddWidgetToViewport(FString path, int32 index, APlayerController* controller);
+
+	void Reveal();
 };

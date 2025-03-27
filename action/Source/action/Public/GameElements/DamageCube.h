@@ -19,7 +19,10 @@ class ACTION_API ADamageCube : public ADefaultAtackActor
 public:
 	ADamageCube();
 
-	float speed;
+	void SetCollisionSpeed(float f);
+
+	void SetCollisionSize(FVector size);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -30,5 +33,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<UBoxComponent> pBox;
 
-	TObjectPtr<UStaticMeshComponent> pMesh;
+	UPROPERTY()
+	float speed;
+	//TObjectPtr<UStaticMeshComponent> pMesh;
 };

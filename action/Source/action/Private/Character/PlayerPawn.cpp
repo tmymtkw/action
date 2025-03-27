@@ -15,6 +15,11 @@
 #include "Character/PlayerPawnMovementComponent.h"
 #include "Character/PlayerAnimInstance.h"
 #include "GameElements/DamageCube.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+#include "Camera/CameraShakeBase.h"
+#include "Character/PlayerCameraShake.h"
+#include "Gamemode/GameModeBaseInGame.h"
 //#include "UI/CursorWidget.h"
 
 // コンストラクタ
@@ -24,21 +29,23 @@ APlayerPawn::APlayerPawn() {
 	// 当たり判定
 	pBody = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
 	pBody->SetCapsuleSize(30.0f, 90.0f);
-	pBody->SetHiddenInGame(false);
+	pBody->SetHiddenInGame(true);
 	pBody->SetSimulatePhysics(false);
 	pBody->SetCollisionProfileName("CharacterCollision");
 	pBody->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBegin);
+	pBody->ShapeColor = FColor::Blue;
 	// TODO: Set Root Component
 	pBody->SetupAttachment(RootComponent);
 
 	// 回避用コリジョン
 	pAvoid = CreateDefaultSubobject<USphereComponent>(TEXT("AvoidCollision"));
 	pAvoid->SetSphereRadius(125.0f);
-	pAvoid->SetHiddenInGame(false);
+	pAvoid->SetHiddenInGame(true);
 	pAvoid->SetSimulatePhysics(false);
 	pAvoid->SetCollisionProfileName("AvoidCollision");
 	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapBegin);
 	pAvoid->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapEnd);
+	pAvoid->ShapeColor = FColor::Green;
 	pAvoid->SetupAttachment(pBody);
 
 	// メッシュ
@@ -75,6 +82,9 @@ APlayerPawn::APlayerPawn() {
 	pCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	pCamera->SetupAttachment(pSpringArm);
 
+	pAttackShake = TSoftClassPtr<UCameraShakeBase>(UPlayerCameraShake::StaticClass()).LoadSynchronous();
+	pDamageShake = TSoftClassPtr<UCameraShakeBase>(UPlayerCameraShake::StaticClass()).LoadSynchronous();
+
 	// 移動コンポーネント
 	pPawnMove = CreateDefaultSubobject<UPlayerPawnMovementComponent>(TEXT("PawnMove"));
 	pPawnMove->SetUpdatedComponent(RootComponent);
@@ -97,6 +107,12 @@ APlayerPawn::APlayerPawn() {
 	pCameraLockInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_CameraLock.IA_CameraLock'"));
 	pWeakAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_WeakAttack.IA_WeakAttack'"));
 	pPowerAttackInput = LoadObject<UInputAction>(NULL, TEXT("/Script/EnhancedInput.InputAction'/Game/Input/InputActions/IA_PowerAttack.IA_PowerAttack'"));
+
+	// Niagara
+	niagaraAttackSystem = LoadObject<UNiagaraSystem>(NULL, TEXT("/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_attack.NS_attack'"));
+	//attackEffect = NewObject<UNiagaraComponent>(GetTransientPackage());
+	//attackEffect->SetAsset(attackSystem);
+	//attackEffect->SetupAttachment(pBody);
 
 	// 変数の初期化
 	bAvoidOverlap = false;
@@ -139,12 +155,19 @@ void APlayerPawn::Tick(float DeltaTime) {
 	// カメラ位置の更新
 	this->UpdateCameraAngle();
 
+	if (fHP <= 0.0f) return;
+
 	// 速度の更新
-	pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
-	animInstance->SetMove(pPawnMove->GetInput());
+	if (!animInstance->GetPowerAttack()) {
+		pPawnMove->UpdatePawnMovement(DeltaTime, (0.1f < fBlinkTime), bCameraLock, pSpringArm->GetComponentRotation());
+		animInstance->SetMove(pPawnMove->GetInput());
+	}
 
 	// ブリンク時間の更新
-	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
+	if (0.0f < fBlinkTime) {
+		fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
+		if (fBlinkTime <= 0.2f) animInstance->DeactivateBlink();
+	}
 
 	// SPの回復
 	if (fBlinkTime <= 0.0f && !animInstance->GetPowerAttack()) {
@@ -215,17 +238,40 @@ void APlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 	// ダメージを受ける場合
 	else {
-		TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
+		TObjectPtr<ADefaultAtackActor> actor = Cast<ADefaultAtackActor>(OtherActor);
 
 		// HPが減少, APに変換
 		fHP = FMathf::Max(fHP - actor->GetDamageValue(), 0.0f);
 		AP = FMathf::Min(AP + 10.0f, fMaxPower - fHP);
 		UKismetSystemLibrary::PrintString(this, TEXT("Player Damaged"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+
+		if (const TObjectPtr<APlayerController> playerController = Cast<APlayerController>(Controller)) {
+			if (!pDamageShake) return;
+
+			playerController->PlayerCameraManager->StartCameraShake(pDamageShake, 1.0f);
+			UKismetSystemLibrary::PrintString(this, TEXT("Camera Shaked"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+		}
+
+		// HPが0になった時
+		if (fHP <= 0) {
+			UKismetSystemLibrary::PrintString(this, TEXT("Calling GameOver Event"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+			TObjectPtr<AGameModeBaseInGame> gamemode = Cast<AGameModeBaseInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (gamemode) {
+				UKismetSystemLibrary::PrintString(this, TEXT("Calling Gamemode function"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+
+				animInstance->SetMove(FVector::Zero());
+				pBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				animInstance->ActivateDeath();
+				gamemode->ActivateResult(false);
+			}
+		}
 	}
 
 }
 
-// ブリンク中攻撃に接触したときに呼ばれる関数
+// AP獲得可能領域に攻撃が重なった時に呼ばれる関数
 void APlayerPawn::OnAvoidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	// 例外処理
 	if (!OtherActor->ActorHasTag(FName("Enemy"))) return;
@@ -290,6 +336,9 @@ void APlayerPawn::SetBlinkInput() {
 
 	// ブリンク方向を設定
 	pPawnMove->SetBlinkDirection(pSpringArm->GetComponentRotation());
+
+	// アニメーション
+	animInstance->ActivateBlink((lockingEnemy != nullptr));
 }
 
 // スプリント入力を取得する関数
@@ -349,8 +398,11 @@ void APlayerPawn::PowerAttack() {
 	// APの消費
 
 	// 攻撃アクタのスポーン
-	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 125.0f + pMesh->GetUpVector() * 60.0f;
+	FVector Location = pMesh->GetComponentLocation() + pMesh->GetRightVector() * 50.0f + pMesh->GetUpVector() * 90.0f;
 	FRotator Rotation = pMesh->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+	FTransform spawnTransform;
+	spawnTransform.SetLocation(Location);
+	spawnTransform.SetRotation(Rotation.Quaternion());
 
 	TObjectPtr<UWorld> World = GetWorld();
 	if (!World) return;
@@ -358,11 +410,28 @@ void APlayerPawn::PowerAttack() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	TObjectPtr<ADamageCube> attack = World->SpawnActor<ADamageCube>(Location, Rotation, SpawnParams);
-	attack->AddActorTag(FName("Player"));
-	attack->speed = 150.0f;
+	auto attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
+	attack->AddActorTag("Player");
+	attack->SetCollisionSpeed(500.0f);
+	attack->SetCollisionSize(FVector(50.0f, 200.0f, 200.0f));
 	attack->SetDamageValue(AP);
+	attack->FinishSpawning(spawnTransform);
+
+	if (const TObjectPtr<APlayerController> playerController = Cast<APlayerController>(Controller)) {
+		if (!pAttackShake) return;
+
+		playerController->PlayerCameraManager->StartCameraShake(pAttackShake, 1.0f);
+		UKismetSystemLibrary::PrintString(this, TEXT("Camera Shaked"), true, false, FColor::Blue, 5.0f, TEXT("None"));
+	}
+
+
 	AP = 0.0f;
+	if (!niagaraAttackSystem || !niagaraAttackSystem->IsValid()) {
+		UKismetSystemLibrary::PrintString(this, TEXT("niagara failed"), true, false, FColor::Blue, 3.0f, TEXT("None"));
+		return;
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, niagaraAttackSystem, Location, Rotation, FVector(1.0f), true, true, ENCPoolMethod::AutoRelease, true);
+
 }
 
 void APlayerPawn::RecoverFromAttack(float val) {

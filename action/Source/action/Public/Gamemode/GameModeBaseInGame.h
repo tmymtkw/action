@@ -26,6 +26,12 @@ public:
 
 	void KillPlayer(TObjectPtr<APlayerPawn> Player);
 
+	void ActivateGameOver();
+
+	void ActivateResult(bool isClear);
+
 private:
 	void Respawn();
+
+	void ResetGameSpeed();
 };

@@ -6,6 +6,7 @@
 
 UPlayerAnimInstance::UPlayerAnimInstance() {
 	bPowerAttack = false;
+	bDeath = false;
 	moveSpeed = FVector::Zero();
 }
 
@@ -19,6 +20,10 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds) {
 	if (playerPawn) return;
 
 	GetPlayerPawn();
+}
+
+void UPlayerAnimInstance::ActivateDeath() {
+	bDeath = true;
 }
 
 bool UPlayerAnimInstance::GetPowerAttack() {
@@ -45,4 +50,20 @@ void UPlayerAnimInstance::ActivatePowerAttack() {
 
 void UPlayerAnimInstance::DeactivatePowerAttack() {
 	bPowerAttack = false;
+
+}
+
+void UPlayerAnimInstance::ActivateBlink(bool isLock) {
+	bBlink = true;
+
+	if (isLock) {
+		blinkDir = moveSpeed;
+	}
+	else {
+		blinkDir = FVector::ForwardVector;
+	}
+}
+
+void UPlayerAnimInstance::DeactivateBlink() {
+	bBlink = false;
 }
