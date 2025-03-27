@@ -32,6 +32,7 @@ private:
 
 	float fInterval;
 	float fTime;
+	float fattackSpeed;
 	int fCnt;
 
 	void GetPlayerPawn();

@@ -28,6 +28,8 @@ class ACTION_API AEnemyAttackCube : public ADefaultAtackActor
 public:
 	AEnemyAttackCube();
 
+	void SetSpeed(float val);
+
 protected:
 	void BeginPlay() override;
 

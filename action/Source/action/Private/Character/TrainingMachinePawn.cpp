@@ -33,7 +33,9 @@ void ATrainingMachinePawn::BeginPlay() {
 	fHP = fMaxPower;
 	fInterval = 1.5f;
 	fTime = 0.0f;
+	fattackSpeed = 750.0f;
 	fCnt = 0;
+	GetPlayerPawn();
 }
 
 void ATrainingMachinePawn::Tick(float deltaTime) {
@@ -41,6 +43,11 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 
 	fTime += deltaTime;
 	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fTime), true, false, FColor::Red, deltaTime, TEXT("None"));
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), pBody->GetComponentLocation() + pBody->GetUpVector() * 25.0f, pBody->GetComponentLocation() + pBody->GetUpVector() * 25.0f + pBody->GetForwardVector() * 100.0f, 50.0f, FColor::Red, deltaTime * 1.1f, 3.0f);
+
+	if (fInterval * 0.75f <= fTime) {
+		UKismetSystemLibrary::DrawDebugLine(GetWorld(), pBody->GetComponentLocation() + pBody->GetUpVector() * 25.0f, pBody->GetUpVector() * 25.0f + pPlayer->GetRootComponent()->GetComponentLocation(), FColor::Red, deltaTime * 1.1f, 3.0f);
+	}
 
 	if (fTime < fInterval) return;
 
@@ -61,7 +68,8 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 
 	// 攻撃アクタのスポーン
 	FVector Location = pBody->GetComponentLocation();
-	FRotator Rotation = pBody->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f);
+	FRotator Rotation = (pPlayer->GetRootComponent()->GetComponentLocation() - pBody->GetComponentLocation()).Rotation();
+	
 	FTransform spawnTransform;
 	spawnTransform.SetLocation(Location);
 	spawnTransform.SetRotation(Rotation.Quaternion());
@@ -76,6 +84,7 @@ void ATrainingMachinePawn::Tick(float deltaTime) {
 	attackCube->AddActorTag(FName("Enemy"));
 	attackCube->SetLifeSpan(5.0f);
 	attackCube->SetDamageValue(10.0f);
+	attackCube->SetSpeed(fattackSpeed);
 	attackCube->FinishSpawning(spawnTransform);
 
 	//TObjectPtr<ADamageCube> attack = World->SpawnActorDeferred<ADamageCube>(ADamageCube::StaticClass(), spawnTransform);
@@ -94,6 +103,15 @@ void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	TObjectPtr<ADamageCube> actor = Cast<ADamageCube>(OtherActor);
 	fHP = FMathf::Max(0.0f, fHP - actor->GetDamageValue());
 	pPlayer->RecoverFromAttack(actor->GetDamageValue());
+
+	if (fHP <= fMaxPower * 0.2f) {
+		fInterval = 0.7f;
+		fattackSpeed = 1500.0f;
+	}
+	else if (fHP <= fMaxPower * 0.5f) {
+		fInterval = 1.0f;
+		fattackSpeed = 1300.0f;
+	}
 
 	// game clear
 	if (fHP <= 0.0f) {

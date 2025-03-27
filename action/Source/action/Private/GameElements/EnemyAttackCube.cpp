@@ -27,8 +27,9 @@ AEnemyAttackCube::AEnemyAttackCube() {
 void AEnemyAttackCube::BeginPlay() {
 	Super::BeginPlay();
 
-	speed = 700.0f;
+	//speed = 1000.0f;
 
+	pEffectComp->SetRelativeLocation(pCollision->GetComponentLocation());
 	pEffectComp->Activate(true);
 }
 
@@ -38,4 +39,8 @@ void AEnemyAttackCube::Tick(float deltaTime) {
 
 	//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), pEffect, pCollision->GetComponentLocation(), pCollision->GetComponentRotation(),
 	//																							 FVector(1.0f), true, true, ENCPoolMethod::AutoRelease, true);
+}
+
+void AEnemyAttackCube::SetSpeed(float val) {
+	speed = val;
 }

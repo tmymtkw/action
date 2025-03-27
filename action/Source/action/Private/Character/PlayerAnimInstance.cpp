@@ -50,4 +50,20 @@ void UPlayerAnimInstance::ActivatePowerAttack() {
 
 void UPlayerAnimInstance::DeactivatePowerAttack() {
 	bPowerAttack = false;
+
+}
+
+void UPlayerAnimInstance::ActivateBlink(bool isLock) {
+	bBlink = true;
+
+	if (isLock) {
+		blinkDir = moveSpeed;
+	}
+	else {
+		blinkDir = FVector::ForwardVector;
+	}
+}
+
+void UPlayerAnimInstance::DeactivateBlink() {
+	bBlink = false;
 }

@@ -164,7 +164,10 @@ void APlayerPawn::Tick(float DeltaTime) {
 	}
 
 	// ブリンク時間の更新
-	fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
+	if (0.0f < fBlinkTime) {
+		fBlinkTime = FMathf::Max(fBlinkTime - DeltaTime, 0.0f);
+		if (fBlinkTime <= 0.2f) animInstance->DeactivateBlink();
+	}
 
 	// SPの回復
 	if (fBlinkTime <= 0.0f && !animInstance->GetPowerAttack()) {
@@ -333,6 +336,9 @@ void APlayerPawn::SetBlinkInput() {
 
 	// ブリンク方向を設定
 	pPawnMove->SetBlinkDirection(pSpringArm->GetComponentRotation());
+
+	// アニメーション
+	animInstance->ActivateBlink((lockingEnemy != nullptr));
 }
 
 // スプリント入力を取得する関数
