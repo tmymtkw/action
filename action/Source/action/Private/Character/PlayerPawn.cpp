@@ -29,7 +29,7 @@ APlayerPawn::APlayerPawn() {
 	// “–‚½‚è”»’è
 	pBody = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
 	pBody->SetCapsuleSize(30.0f, 90.0f);
-	pBody->SetHiddenInGame(true);
+	pBody->SetHiddenInGame(false);
 	pBody->SetSimulatePhysics(false);
 	pBody->SetCollisionProfileName("CharacterCollision");
 	pBody->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnOverlapBegin);
@@ -40,7 +40,7 @@ APlayerPawn::APlayerPawn() {
 	// ‰ñ”ð—pƒRƒŠƒWƒ‡ƒ“
 	pAvoid = CreateDefaultSubobject<USphereComponent>(TEXT("AvoidCollision"));
 	pAvoid->SetSphereRadius(125.0f);
-	pAvoid->SetHiddenInGame(true);
+	pAvoid->SetHiddenInGame(false);
 	pAvoid->SetSimulatePhysics(false);
 	pAvoid->SetCollisionProfileName("AvoidCollision");
 	pAvoid->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::OnAvoidOverlapBegin);
@@ -286,6 +286,7 @@ void APlayerPawn::OnAvoidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 
 void APlayerPawn::OnAvoidOverlapEnd(UPrimitiveComponent* OverlappedComp,
 																	 AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+	
 	bAvoidOverlap = false;
 	UKismetSystemLibrary::PrintString(this, TEXT("Avoid overlap end"), true, false, FColor::Blue, 5.0f, TEXT("None"));
 }

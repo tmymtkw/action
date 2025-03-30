@@ -6,6 +6,7 @@
 #include "Character/BaseCharacterPawn.h"
 #include "TrainingMachinePawn.generated.h"
 
+class UBoxComponent;
 /**
  * 
  */
@@ -30,10 +31,15 @@ private:
 
 	TObjectPtr<ABaseCharacterPawn> pPlayer;
 
+	TObjectPtr<UBoxComponent> pGate;
+
 	float fInterval;
 	float fTime;
 	float fattackSpeed;
 	int fCnt;
+	bool isCombat;
 
 	void GetPlayerPawn();
+
+	void OnEnterGate(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

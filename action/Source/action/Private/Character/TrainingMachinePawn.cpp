@@ -7,6 +7,7 @@
 #include "GameElements/DamageCube.h"
 #include "Gamemode/GameModeBaseInGame.h"
 #include "GameElements/EnemyAttackCube.h"
+#include "Components/BoxComponent.h"
 
 ATrainingMachinePawn::ATrainingMachinePawn() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -24,6 +25,17 @@ ATrainingMachinePawn::ATrainingMachinePawn() {
 	pStaticBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	pStaticBody->SetStaticMesh(m);
 	pStaticBody->SetupAttachment(pBody);
+
+	pGate = CreateDefaultSubobject<UBoxComponent>(TEXT("Gate"));
+	pGate->ShapeColor = FColor::Red;
+	pGate->SetHiddenInGame(false);
+	pGate->SetSimulatePhysics(false);
+	pGate->SetBoxExtent(FVector(50.0f, 1000.0f, 500.0f), true);
+	pGate->SetCollisionProfileName("OverlapAll");
+	pGate->OnComponentBeginOverlap.AddDynamic(this, &ATrainingMachinePawn::OnEnterGate);
+	pGate->SetWorldLocation(FVector(- 300.0f, 0.0f, 0.0f));
+
+
 }
 
 void ATrainingMachinePawn::BeginPlay() {
@@ -35,11 +47,21 @@ void ATrainingMachinePawn::BeginPlay() {
 	fTime = 0.0f;
 	fattackSpeed = 750.0f;
 	fCnt = 0;
+	isCombat = false;
 	GetPlayerPawn();
 }
 
 void ATrainingMachinePawn::Tick(float deltaTime) {
 	Super::Tick(deltaTime);
+
+	if (!isCombat) {
+		FVector distance = pBody->GetComponentLocation() - pPlayer->GetRootComponent()->GetComponentLocation();
+		if (distance.Length() < 700.0f) {
+			pGate->SetCollisionProfileName("BlockAll");
+			isCombat = true;
+		}
+		return;
+	}
 
 	fTime += deltaTime;
 	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(fTime), true, false, FColor::Red, deltaTime, TEXT("None"));
@@ -104,11 +126,11 @@ void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	fHP = FMathf::Max(0.0f, fHP - actor->GetDamageValue());
 	pPlayer->RecoverFromAttack(actor->GetDamageValue());
 
-	if (fHP <= fMaxPower * 0.2f) {
-		fInterval = 0.7f;
-		fattackSpeed = 1500.0f;
-	}
-	else if (fHP <= fMaxPower * 0.5f) {
+	//if (fHP <= fMaxPower * 0.2f) {
+	//	fInterval = 0.7f;
+	//	fattackSpeed = 1500.0f;
+	//}
+	/*else*/ if (fHP <= fMaxPower * 0.5f) {
 		fInterval = 1.0f;
 		fattackSpeed = 1300.0f;
 	}
@@ -136,4 +158,9 @@ void ATrainingMachinePawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 
 void ATrainingMachinePawn::GetPlayerPawn() {
 	pPlayer = Cast<ABaseCharacterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+}
+
+void ATrainingMachinePawn::OnEnterGate(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	UKismetSystemLibrary::PrintString(this, TEXT("player entered"), true, false, FColor::Red, 5.0f, TEXT("None"));
+
 }
